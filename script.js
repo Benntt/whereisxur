@@ -1,162 +1,74 @@
 const API = "https://www.bungie.net/Platform";
-const XUR_VENDOR_HASH = 2190858386; // Xûr
-const COMPONENTS = "400,402"; // Vendors, VendorSales
+const XUR_HASH = 2190858386;
 
-// Utility: fetch with API key
 async function bfetch(path) {
-  const res = await fetch(`${API}${path}`, {
-    headers: { "X-API-Key": window.BUNGIE_API_KEY }
-  });
-  const json = await res.json();
-  if (!res.ok || json.ErrorCode !== 1) {
-    throw new Error(json.Message || `HTTP ${res.status}`);
-  }
-  return json.Response;
+  const res = await fetch(`${API}${path}`, { headers: { "X-API-Key": window.BUNGIE_API_KEY } });
+  const data = await res.json();
+  if (!res.ok || data.ErrorCode !== 1) throw new Error(data.Message);
+  return data.Response;
 }
 
-// Utility: get item definition for a single hash (fast per-item call)
-async function getItemDef(itemHash) {
-  const res = await bfetch(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}/`);
-  return res;
-}
-
-// Render helpers
-const statusEl = document.getElementById("status");
-const gridEl = document.getElementById("inventory");
-const countdownEl = document.getElementById("countdown");
-
-// Countdown logic: Friday 17:00 UTC -> Tuesday 17:00 UTC
-function nextUtc(dayIndex, hour) {
-  // dayIndex: 0=Sun ... 6=Sat
-  const now = new Date();
-  // Create a Date in UTC same week
-  const utcNow = new Date(Date.UTC(
-    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()
-  ));
-
-  // find target this week
-  const target = new Date(utcNow);
-  const deltaDays = (dayIndex - target.getUTCDay() + 7) % 7;
-  target.setUTCDate(target.getUTCDate() + deltaDays);
-  target.setUTCHours(hour, 0, 0, 0);
-
-  // if already passed, push a week
-  if (target <= utcNow) target.setUTCDate(target.getUTCDate() + 7);
-  return target;
-}
-
-function formatRemaining(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const d = Math.floor(s / 86400);
-  const h = Math.floor((s % 86400) / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${d}d ${h}h ${m}m ${sec}s`;
-}
-
-function runCountdown() {
-  const now = new Date();
-  // windows: arrival = Friday 17:00 UTC (5), departure = Tuesday 17:00 UTC (2)
-  const nextFri = nextUtc(5, 17);
-  const nextTue = nextUtc(2, 17);
-
-  // Determine which is the *current* active window
-  // If today is between Fri 17:00 UTC and the following Tue 17:00 UTC, count to Tue; else count to Fri.
-  let target;
-  const utcNow = new Date(Date.UTC(
-    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()
-  ));
-  // get last Friday and next Tuesday relative to now
-  const lastFri = new Date(nextFri); lastFri.setUTCDate(nextFri.getUTCDate() - 7);
-  const upcomingTue = (utcNow < nextTue) ? nextTue : new Date(nextTue.getTime() + 7*86400000);
-
-  const inWindow = utcNow >= lastFri && utcNow < upcomingTue;
-  target = inWindow ? upcomingTue : nextFri;
-
-  function tick() {
-    const rem = target - new Date();
-    countdownEl.textContent = (inWindow ? "Xûr leaves in " : "Xûr arrives in ") + formatRemaining(rem);
-    requestAnimationFrame(tick);
-  }
-  tick();
-}
-
-// Build a cost string from sale item costs (Strange Coins etc.)
-function costString(costs) {
-  if (!Array.isArray(costs) || costs.length === 0) return "";
-  return costs.map(c => `${c.quantity} × ${c.itemHash}`).join(", "); // will be replaced with names if needed
-}
-
-// Replace itemHash costs with names/icons lazily
-async function prettyCosts(costs) {
-  if (!Array.isArray(costs) || costs.length === 0) return "";
-  const parts = [];
-  for (const c of costs) {
-    const def = await getItemDef(c.itemHash);
-    const name = def?.displayProperties?.name || c.itemHash;
-    parts.push(`${c.quantity} × ${name}`);
-  }
-  return parts.join(" • ");
-}
-
-function cardTemplate({ name, type, icon, costs, category }) {
-  const img = icon ? `https://www.bungie.net${icon}` : "";
-  return `
-    <article class="card">
-      <img src="${img}" alt="${name}" loading="lazy" />
-      <div class="meta">
-        <h3>${name}</h3>
-        <div class="type">${type || ""}</div>
-        <div class="cost">${costs || ""}</div>
-        ${category ? `<span class="badge">${category}</span>` : ""}
-      </div>
-    </article>
-  `;
+async function getItemDef(hash) {
+  const r = await bfetch(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
+  return r.displayProperties;
 }
 
 async function loadXur() {
+  const status = document.getElementById("status");
+  const grid = document.getElementById("inventory");
   try {
-    statusEl.textContent = "Loading Xûr from public vendors…";
-    const pub = await bfetch(`/Destiny2/Vendors/?components=${COMPONENTS}`);
-
-    // Find Xûr vendor and sales
-    const vendors = pub.vendors?.data || {};
-    const sales = pub.sales?.data || {}; // keyed by vendorHash
-
-    if (!vendors[XUR_VENDOR_HASH] || !sales[XUR_VENDOR_HASH]) {
-      statusEl.textContent = "Xûr not available right now. Countdown reflects next arrival.";
+    status.textContent = "Fetching public vendors...";
+    const r = await bfetch("/Destiny2/Vendors/?components=400,402");
+    const sales = r.sales.data[XUR_HASH];
+    if (!sales) {
+      status.textContent = "Xûr is not available right now.";
       return;
     }
-
-    statusEl.textContent = "Xûr is here. Building inventory…";
-
-    const saleItems = Object.values(sales[XUR_VENDOR_HASH].saleItems || {});
-    // Fetch definitions for each itemHash (name/icon/type)
-    const cards = [];
-    for (const s of saleItems) {
-      const def = await getItemDef(s.itemHash);
-      const name = def?.displayProperties?.name || "Unknown Item";
-      const type = def?.itemTypeDisplayName || "";
-      const icon = def?.displayProperties?.icon || "";
-      const costs = await prettyCosts(s.costs || []);
-      // Optional: category from vendor categories if you want to group later
-      cards.push(cardTemplate({ name, type, icon, costs }));
+    status.textContent = "Xûr is here!";
+    const items = Object.values(sales.saleItems);
+    for (const s of items) {
+      const d = await getItemDef(s.itemHash);
+      const card = document.createElement("article");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="https://bungie.net${d.icon}" alt="${d.name}">
+        <div class="meta">
+          <h3>${d.name}</h3>
+          <div class="type">${d.itemTypeDisplayName || ""}</div>
+        </div>`;
+      grid.appendChild(card);
     }
-
-    gridEl.innerHTML = cards.join("");
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = `Error loading Bungie API: ${err.message}`;
+  } catch (e) {
+    status.textContent = "Error: " + e.message;
   }
 }
 
-// Init
-if (!window.BUNGIE_API_KEY || window.BUNGIE_API_KEY.includes("PASTE_YOUR_")) {
-  document.getElementById("status").textContent =
-    "Add your Bungie API key to config.js to enable live data.";
-} else {
-  loadXur();
+// countdown
+function countdown() {
+  const el = document.getElementById("countdown");
+  const now = new Date();
+  const day = now.getUTCDay();
+  const hour = now.getUTCHours();
+  const target = new Date();
+  let label;
+  if ((day > 5 || (day === 5 && hour >= 17)) || day < 2) {
+    // currently active, count to Tuesday 17:00 UTC
+    label = "Xûr leaves in ";
+    target.setUTCDate(now.getUTCDate() + ((2 - day + 7) % 7));
+    target.setUTCHours(17,0,0,0);
+  } else {
+    // inactive, count to Friday 17:00 UTC
+    label = "Xûr arrives in ";
+    target.setUTCDate(now.getUTCDate() + ((5 - day + 7) % 7));
+    target.setUTCHours(17,0,0,0);
+  }
+  const t = target - now;
+  const d = Math.floor(t / 86400000);
+  const h = Math.floor((t % 86400000) / 3600000);
+  const m = Math.floor((t % 3600000) / 60000);
+  el.textContent = `${label}${d}d ${h}h ${m}m`;
 }
-runCountdown();
+
+countdown();
+setInterval(countdown, 60000);
+loadXur();
