@@ -1,10 +1,21 @@
-const API = "https://www.bungie.net/Platform";
+const API = "https://www.bungie.net/Platform"; // ensure www subdomain
 const XUR_HASH = 2190858386;
 
+function bust(url) {
+  const v = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : Date.now();
+  return `${url}${url.includes("?") ? "&" : "?"}v=${v}`;
+}
+
 async function bfetch(path) {
-  const res = await fetch(`${API}${path}`, { headers: { "X-API-Key": window.BUNGIE_API_KEY } });
-  const data = await res.json();
-  if (!res.ok || data.ErrorCode !== 1) throw new Error(data.Message);
+  const res = await fetch(bust(`${API}${path}`), {
+    headers: { "X-API-Key": window.BUNGIE_API_KEY }
+  });
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (!res.ok || !data || data.ErrorCode !== 1) {
+    const msg = data?.Message || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
   return data.Response;
 }
 
@@ -17,13 +28,10 @@ async function loadXur() {
   const status = document.getElementById("status");
   const grid = document.getElementById("inventory");
   try {
-    status.textContent = "Fetching public vendors...";
+    status.textContent = "Fetching public vendors…";
     const r = await bfetch("/Destiny2/Vendors/?components=400,402");
-    const sales = r.sales.data[XUR_HASH];
-    if (!sales) {
-      status.textContent = "Xûr is not available right now.";
-      return;
-    }
+    const sales = r.sales?.data?.[XUR_HASH];
+    if (!sales) { status.textContent = "Xûr is not available right now."; return; }
     status.textContent = "Xûr is here!";
     const items = Object.values(sales.saleItems);
     for (const s of items) {
@@ -31,7 +39,7 @@ async function loadXur() {
       const card = document.createElement("article");
       card.className = "card";
       card.innerHTML = `
-        <img src="https://bungie.net${d.icon}" alt="${d.name}">
+        <img src="https://www.bungie.net${d.icon}" alt="${d.name}">
         <div class="meta">
           <h3>${d.name}</h3>
           <div class="type">${d.itemTypeDisplayName || ""}</div>
@@ -39,11 +47,12 @@ async function loadXur() {
       grid.appendChild(card);
     }
   } catch (e) {
-    status.textContent = "Error: " + e.message;
+    document.getElementById("status").textContent =
+      "Error: " + e.message + " (Check Origin whitelist & API key)";
   }
 }
 
-// countdown
+// countdown stays the same as before
 function countdown() {
   const el = document.getElementById("countdown");
   const now = new Date();
@@ -52,12 +61,10 @@ function countdown() {
   const target = new Date();
   let label;
   if ((day > 5 || (day === 5 && hour >= 17)) || day < 2) {
-    // currently active, count to Tuesday 17:00 UTC
     label = "Xûr leaves in ";
     target.setUTCDate(now.getUTCDate() + ((2 - day + 7) % 7));
     target.setUTCHours(17,0,0,0);
   } else {
-    // inactive, count to Friday 17:00 UTC
     label = "Xûr arrives in ";
     target.setUTCDate(now.getUTCDate() + ((5 - day + 7) % 7));
     target.setUTCHours(17,0,0,0);
