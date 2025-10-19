@@ -79,3 +79,15 @@ function countdown() {
 countdown();
 setInterval(countdown, 60000);
 loadXur();
+
+// const API = "https://www.bungie.net/Platform";
+const API = "https://xur-proxy.<your-subdomain>.workers.dev/api";  // <-- your Worker URL
+const XUR_HASH = 2190858386;
+
+async function bfetch(path) {
+  const res = await fetch(`${API}${path}`, { headers: {} }); // no key on client now
+  const data = await res.json();
+  if (!res.ok || data.ErrorCode !== 1) throw new Error(data.Message || `HTTP ${res.status}`);
+  return data.Response;
+}
+
