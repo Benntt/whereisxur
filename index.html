@@ -2,51 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Where Is Xûr — Live Inventory</title>
+  <title>Where Is Xûr — Live Inventory & Location Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Live Xûr inventory with images, arrival and reset countdowns; sourced via the Bungie API." />
+  <meta
+    name="description"
+    content="Track Xûr's weekly arrival, departure, and inventory with live data pulled from the Bungie API."
+  />
   <meta name="robots" content="index,follow" />
-  <link rel="preconnect" href="https://www.bungie.net" />
-  <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="icon" href="assets/favicon.png" />
   <meta property="og:title" content="Where Is Xûr — Live Inventory" />
-  <meta property="og:description" content="Live Xûr inventory with images, arrival and reset countdowns; sourced via the Bungie API." />
+  <meta
+    property="og:description"
+    content="Countdowns, location details, and item cards sourced directly from Bungie."
+  />
   <meta property="og:type" content="website" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
-  <header class="wrap">
-    <h1>Where Is Xûr</h1>
-    <p class="sub">Live inventory; images pulled from Bungie’s manifest.</p>
-
-    <section class="timers">
-      <div class="timer">
-        <div class="label">Arrives Friday</div>
-        <div id="arriveCountdown" class="value">--:--:--</div>
-      </div>
-      <div class="timer">
-        <div class="label">Leaves Tuesday</div>
-        <div id="leaveCountdown" class="value">--:--:--</div>
-      </div>
-      <div class="timer">
-        <div class="label">Next Weekly Reset</div>
-        <div id="resetCountdown" class="value">--:--:--</div>
-      </div>
+  <div class="backdrop" aria-hidden="true"></div>
+  <header class="wrap site-header">
+    <div class="masthead">
+      <h1>Where Is Xûr</h1>
+      <p class="tagline">Live inventory, location tips, and reset timers.</p>
+    </div>
+    <section class="timers" aria-label="Xûr schedule">
+      <article class="timer">
+        <h2 class="timer__label" id="arriveLabel">Arrives Friday</h2>
+        <p class="timer__value" id="arriveCountdown">--:--:--</p>
+      </article>
+      <article class="timer">
+        <h2 class="timer__label" id="leaveLabel">Leaves Tuesday</h2>
+        <p class="timer__value" id="leaveCountdown">--:--:--</p>
+      </article>
+      <article class="timer">
+        <h2 class="timer__label">Next Weekly Reset</h2>
+        <p class="timer__value" id="resetCountdown">--:--:--</p>
+      </article>
     </section>
   </header>
 
   <main class="wrap">
-    <section id="status" class="status">Loading Xûr’s inventory…</section>
+    <section id="status" class="status" role="status" aria-live="polite">
+      Loading Xûr’s inventory…
+    </section>
+
+    <section id="location" class="location" aria-live="polite" aria-busy="true">
+      <article class="location-card location-card--placeholder">
+        <div class="location-card__body">
+          <h2>Finding Xûr…</h2>
+          <p>We’ll update this space with Xûr’s current landing zone once he arrives.</p>
+        </div>
+      </article>
+    </section>
 
     <section id="inventory" class="grid" aria-live="polite" aria-busy="true"></section>
+
+    <section class="disclaimer">
+      <h2>About this project</h2>
+      <p>
+        This is an open-source recreation of <strong>WhereIsXur.com</strong> designed for static hosting on GitHub Pages.
+        All Destiny content © Bungie.
+      </p>
+    </section>
   </main>
 
-  <footer class="wrap">
+  <footer class="wrap site-footer">
     <p>
-      Data courtesy of Bungie API; images © Bungie.
-      Location tip: Xûr is found at the Tower Bazaar when available; details: http://whereisxur.com/tower
+      Data powered by the Bungie API. To contribute or self-host, grab the source on GitHub and provide your own Bungie
+      API key or proxy.
     </p>
   </footer>
 
+  <script src="assets/config.js"></script>
   <script type="module" src="assets/app.js"></script>
 </body>
 </html>
