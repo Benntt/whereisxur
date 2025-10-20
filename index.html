@@ -2,29 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Where Is Xûr? Destiny 2 Live Inventory + Reset Timer</title>
-  <meta name="description" content="Live Destiny 2 Xûr inventory directly from the Bungie API with item images, exotic gear, and countdown to next reset." />
-  <meta name="keywords" content="Where is Xur, Destiny 2, Xur inventory, Xur location, Exotic vendor, Bungie API, Strange Coins, Ash and Iron" />
+  <title>Where Is Xûr — Live Inventory</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Live Xûr inventory with images, arrival and reset countdowns; sourced via the Bungie API." />
+  <meta name="robots" content="index,follow" />
+  <link rel="preconnect" href="https://www.bungie.net" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="icon" href="assets/favicon.png" />
+  <meta property="og:title" content="Where Is Xûr — Live Inventory" />
+  <meta property="og:description" content="Live Xûr inventory with images, arrival and reset countdowns; sourced via the Bungie API." />
+  <meta property="og:type" content="website" />
 </head>
 <body>
   <header class="wrap">
-    <h1>Where Is Xûr? <span class="sub">Live Inventory & Reset Countdown</span></h1>
-    <div id="countdown" class="timer">Loading...</div>
-    <p class="note">Pulled live from the Bungie API</p>
+    <h1>Where Is Xûr</h1>
+    <p class="sub">Live inventory; images pulled from Bungie’s manifest.</p>
+
+    <section class="timers">
+      <div class="timer">
+        <div class="label">Arrives Friday</div>
+        <div id="arriveCountdown" class="value">--:--:--</div>
+      </div>
+      <div class="timer">
+        <div class="label">Leaves Tuesday</div>
+        <div id="leaveCountdown" class="value">--:--:--</div>
+      </div>
+      <div class="timer">
+        <div class="label">Next Weekly Reset</div>
+        <div id="resetCountdown" class="value">--:--:--</div>
+      </div>
+    </section>
   </header>
 
   <main class="wrap">
-    <section id="status">Loading Xûr data...</section>
-    <section id="inventory" class="grid"></section>
+    <section id="status" class="status">Loading Xûr’s inventory…</section>
+
+    <section id="inventory" class="grid" aria-live="polite" aria-busy="true"></section>
   </main>
 
-  <footer class="wrap foot">
-    <p>Mirror project powered by <a href="https://bungie.net">Bungie.net API</a> • Original at <a href="https://whereisxur.com">WhereIsXur.com</a></p>
+  <footer class="wrap">
+    <p>
+      Data courtesy of Bungie API; images © Bungie.
+      Location tip: Xûr is found at the Tower Bazaar when available; details: http://whereisxur.com/tower
+    </p>
   </footer>
 
-  <script src="config.js"></script>
-  <script src="script.js" type="module"></script>
+  <script type="module" src="assets/app.js"></script>
 </body>
 </html>
