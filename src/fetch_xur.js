@@ -15,7 +15,7 @@ const HEADERS = { "X-API-Key": API_KEY };
 const BUNGIE = "https://www.bungie.net/Platform";
 const CDN = "https://www.bungie.net";
 const XUR_VENDOR_HASH = 2190858386;
-const OUT_PATH = path.join("public", "data", "xur_inventory.json");
+const OUT_PATH = path.join("data", "xur_inventory.json");
 
 // Minimal delay to respect rate limits; keeps things polite.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
