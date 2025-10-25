@@ -8,16 +8,25 @@ async function loadXurInventory() {
     const data = await res.json();
 
     container.innerHTML = "";
-
-    // Your file has a structure like { vendorHash, categories: { "1": { itemHash, displayProperties, ... } } }
     const categories = data.categories || {};
-    const items = Object.values(categories);
-    const filtered = items.slice(0, 40);
+    const items = [];
+
+    // Flatten all saleItems across categories
+    Object.values(categories).forEach(category => {
+      if (category.saleItems) {
+        Object.values(category.saleItems).forEach(sale => items.push(sale));
+      }
+    });
+
+    if (items.length === 0) {
+      container.innerHTML = "<p>No items available from Xûr right now.</p>";
+      return;
+    }
 
     const grid = document.createElement("div");
     grid.classList.add("inventory-grid");
 
-    filtered.forEach(item => {
+    items.slice(0, 40).forEach(item => {
       const display = item.displayProperties || {};
 
       const icon = display.icon
