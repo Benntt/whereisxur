@@ -1,35 +1,22 @@
-name: Update Xur Inventory and Deploy
+name: Update Xur Inventory
 
 on:
   schedule:
-    - cron: '0 * * * 5'  # Every hour on Friday
-    - cron: '0 * * * 6'  # Every hour on Saturday
-    - cron: '0 * * * 0'  # Every hour on Sunday
-    - cron: '0 * * * 1'  # Every hour on Monday
-    - cron: '0 * * * 2'  # Every hour on Tuesday
+    # Runs every hour Friday–Tuesday (while Xûr is active)
+    - cron: "0 * * * 5-2"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-
-    env:
-      BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
-      BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
-      BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
-      BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -38,9 +25,16 @@ jobs:
         run: npm install
 
       - name: Fetch Xur inventory
+        env:
+          BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
+          BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
+          BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
+          BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
         run: node src/fetch_xur.js
 
-      - name: Fetch item definitions
+      - name: Fetch definitions and enrich data
+        env:
+          BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
         run: node src/fetch_definitions.js
 
       - name: Commit and push updated data
@@ -48,31 +42,10 @@ jobs:
           mkdir -p data
           git config user.name "xur-bot"
           git config user.email "xur-bot@users.noreply.github.com"
-          git add data/xur_inventory.json data/xur_inventory_enriched.json
+          git add data/xur_inventory.json data/xur_inventory_enriched.json || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "Update Xur inventory and definitions"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
+            git push
           fi
-
-      - name: Prepare deployment files
-        run: |
-          mkdir -p deploy
-          cp -r index.html assets css js public data/xur_inventory*.json deploy/
-          cd deploy
-          echo "Prepared deploy directory with site assets and data."
-
-      - name: Deploy to GitHub Pages (gh-pages branch)
-        run: |
-          cd deploy
-          git init
-          git config user.name "xur-bot"
-          git config user.email "xur-bot@users.noreply.github.com"
-          git add .
-          git commit -m "Deploy site update"
-          git branch -M gh-pages
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
-
-      - name: Post deployment confirmation
-        run: echo "✅ Successfully updated data and deployed to gh-pages branch."
