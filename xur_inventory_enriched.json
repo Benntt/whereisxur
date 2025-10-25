@@ -1,0 +1,156 @@
+{
+  "vendorHash": 2190858386,
+  "generatedAt": "2025-10-25T18:41:47.926Z",
+  "categories": {
+    "11": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 11,
+      "itemHash": 3642110725,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Ophidia Spathe",
+      "type": "Chest Armor",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/dac0f107efc0dc9c887ffef83fc1bf62.jpg"
+    },
+    "56": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 56,
+      "itemHash": 2551549824,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Citan's Ramparts",
+      "type": "Gauntlets",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/2e01a8839e2cb3f8c9f53bd01001d838.jpg"
+    },
+    "67": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 67,
+      "itemHash": 2966741808,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Sanguine Alchemy",
+      "type": "Chest Armor",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/e55c1cbf65fabab485bbc34272f59b11.jpg"
+    },
+    "94": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 94,
+      "itemHash": 730200061,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "No Backup Plans",
+      "type": "Gauntlets",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/a5e7aadf7e00089690951e52c35afcbb.jpg"
+    },
+    "125": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 125,
+      "itemHash": 1446374842,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Gifted Conviction",
+      "type": "Chest Armor",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/4365fd49261fb81d069d0db10acb9fd4.jpg"
+    },
+    "132": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 132,
+      "itemHash": 888791258,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Rime-coat Raiment",
+      "type": "Chest Armor",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/16001620c3ec683e805fe68017167b69.jpg"
+    },
+    "133": {
+      "saleStatus": 2,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 133,
+      "itemHash": 1540068657,
+      "quantity": 1,
+      "costs": [
+        {
+          "itemHash": 800069450,
+          "quantity": 41,
+          "hasConditionalVisibility": false
+        }
+      ],
+      "name": "Relativism",
+      "type": "Unknown Type",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/58ae63b773059e5bd7a4d43298f73a50.jpg"
+    },
+    "137": {
+      "saleStatus": 0,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 137,
+      "itemHash": 1617663696,
+      "quantity": 1,
+      "costs": [],
+      "name": "More Strange Offers",
+      "type": "Unknown Type",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/95bb18e6edbdc9b70ce9ffc077814f32.jpg"
+    },
+    "138": {
+      "saleStatus": 0,
+      "failureIndexes": [],
+      "augments": 0,
+      "vendorItemIndex": 138,
+      "itemHash": 3670668729,
+      "quantity": 1,
+      "costs": [],
+      "name": "Strange Gear Offers",
+      "type": "Unknown Type",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/51dcc6133effbed04c9221adbdd7d405.jpg"
+    }
+  }
+}
