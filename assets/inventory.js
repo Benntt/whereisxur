@@ -4,7 +4,7 @@ async function loadXurInventory() {
 
   try {
     const response = await fetch("/whereisxur/data/xur_inventory_enriched.json");
-
+    
     const data = await response.json();
 
     if (!data || !data.categories) {
