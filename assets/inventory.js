@@ -3,43 +3,45 @@ async function loadXurInventory() {
   container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
 
   try {
-    const res = await fetch("./data/xur_inventory.json");
+    const res = await fetch("../data/xur_inventory.json");
     if (!res.ok) throw new Error("Failed to load inventory");
     const data = await res.json();
 
     container.innerHTML = "";
-    for (const [category, items] of Object.entries(data.categories)) {
-      const h2 = document.createElement("h2");
-      h2.textContent = category;
-      container.appendChild(h2);
 
-      const grid = document.createElement("div");
-      grid.classList.add("inventory-grid");
+    // The file structure has "categories" with numbered keys
+    const items = Object.values(data.categories);
 
-      items.forEach(item => {
-        const card = document.createElement("div");
-        card.classList.add("item-card");
+    // Create a grid for the items
+    const grid = document.createElement("div");
+    grid.classList.add("inventory-grid");
 
-        const img = document.createElement("img");
-        img.src = item.icon;
-        img.alt = item.name;
+    items.forEach(entry => {
+      // Some entries might not have item details yet
+      const card = document.createElement("div");
+      card.classList.add("item-card");
 
-        const name = document.createElement("h3");
-        name.textContent = item.name;
+      // Try to include fallback visuals for missing data
+      const img = document.createElement("img");
+      img.src = entry.icon || "https://www.bungie.net/img/theme/destiny/icons/icon_missing.png";
+      img.alt = entry.name || "Unknown Item";
 
-        const type = document.createElement("p");
-        type.textContent = item.type || "";
+      const name = document.createElement("h3");
+      name.textContent = entry.name || `Item ${entry.itemHash}`;
 
-        card.appendChild(img);
-        card.appendChild(name);
-        card.appendChild(type);
-        grid.appendChild(card);
-      });
+      const type = document.createElement("p");
+      type.textContent = entry.type || "";
 
-      container.appendChild(grid);
-    }
+      card.appendChild(img);
+      card.appendChild(name);
+      card.appendChild(type);
+      grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
+
   } catch (err) {
-    console.error(err);
+    console.error("Error loading Xûr’s inventory:", err);
     container.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
   }
 }
