@@ -3,7 +3,7 @@ async function loadXurInventory() {
   container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
 
   try {
-    const res = await fetch("../data/xur_inventory.json");
+    const res = await fetch("https://benntt.github.io/whereisxur/data/xur_inventory.json");
     if (!res.ok) throw new Error("Failed to load inventory");
     const data = await res.json();
 
