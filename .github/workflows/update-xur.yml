@@ -2,8 +2,12 @@ name: Update Xur Inventory
 
 on:
   schedule:
-    # Runs every hour Friday–Tuesday
-    - cron: "0 * * * 5-2"
+    # Runs every hour Friday through Tuesday
+    - cron: "0 * * * 5"  # Friday
+    - cron: "0 * * * 6"  # Saturday
+    - cron: "0 * * * 0"  # Sunday
+    - cron: "0 * * * 1"  # Monday
+    - cron: "0 * * * 2"  # Tuesday
   workflow_dispatch:
 
 jobs:
