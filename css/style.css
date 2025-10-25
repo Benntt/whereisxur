@@ -165,3 +165,43 @@ body {
   color: #ddd;
   font-size: 0.9rem;
 }
+.xur-section {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.xur-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+}
+
+.xur-item {
+  background: rgba(15, 15, 15, 0.85);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 180px;
+  transition: transform 0.15s ease;
+}
+
+.xur-item:hover {
+  transform: scale(1.05);
+}
+
+.xur-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.xur-item h3 {
+  font-size: 0.95rem;
+  margin: 8px 0 4px 0;
+}
+
+.xur-type {
+  font-size: 0.8rem;
+  color: #ccc;
+}
