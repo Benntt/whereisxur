@@ -9,6 +9,7 @@ async function loadXurInventory() {
 
     container.innerHTML = "";
 
+    // Your file has a structure like { vendorHash, categories: { "1": { itemHash, displayProperties, ... } } }
     const categories = data.categories || {};
     const items = Object.values(categories);
     const filtered = items.slice(0, 40);
@@ -16,36 +17,25 @@ async function loadXurInventory() {
     const grid = document.createElement("div");
     grid.classList.add("inventory-grid");
 
-    filtered.forEach(entry => {
-      const def = entry.definition || entry.displayProperties || entry || {};
-      const display = def.displayProperties || {};
+    filtered.forEach(item => {
+      const display = item.displayProperties || {};
 
-      const icon =
-        display.icon ||
-        def.icon ||
-        def.secondaryIcon ||
-        "https://www.bungie.net/img/theme/destiny/icons/icon_missing.png";
+      const icon = display.icon
+        ? `https://www.bungie.net${display.icon}`
+        : "https://www.bungie.net/img/theme/destiny/icons/icon_missing.png";
 
-      const name =
-        display.name ||
-        def.name ||
-        def.itemName ||
-        `Item ${entry.itemHash}`;
-
+      const name = display.name || `Item ${item.itemHash}`;
       const type =
-        def.itemTypeDisplayName ||
-        def.type ||
-        def.classType ||
-        def.itemType ||
-        "";
+        item.itemTypeDisplayName ||
+        item.classType ||
+        item.itemType ||
+        "Unknown Type";
 
       const card = document.createElement("div");
       card.classList.add("item-card");
 
       const img = document.createElement("img");
-      img.src = icon.startsWith("http")
-        ? icon
-        : `https://www.bungie.net${icon}`;
+      img.src = icon;
       img.alt = name;
 
       const nameEl = document.createElement("h3");
