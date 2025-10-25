@@ -3,7 +3,8 @@ async function loadXurInventory() {
   container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
 
   try {
-    const response = await fetch("data/xur_inventory_enriched.json");
+    const response = await fetch("../data/xur_inventory_enriched.json");
+
     const data = await response.json();
 
     if (!data || !data.categories) {
