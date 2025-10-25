@@ -1,188 +1,115 @@
-// Fetches Xûr's public vendor sales; enriches with Manifest; outputs JSON.
-// No OAuth; uses GetPublicVendors so it can run headless in Actions.
-
-import fs from "fs/promises";
+import fs from "fs";
 import path from "path";
 import fetch from "node-fetch";
 
-const API_KEY = process.env.BUNGIE_API_KEY; // add in GitHub Actions secret
-if (!API_KEY) {
-  console.error("Missing BUNGIE_API_KEY env var.");
-  process.exit(1);
+const API_KEY = process.env.BUNGIE_API_KEY;
+const BASE_URL = "https://www.bungie.net/Platform/Destiny2";
+const VENDOR_HASH = 2190858386; // Xûr
+const OUT_PATH = path.join("data", "xur_inventory.json");
+
+// Helper: Bungie API GET with retries
+async function bungieGet(endpoint) {
+  const url = `${BASE_URL}${endpoint}`;
+  const res = await fetch(url, { headers: { "X-API-Key": API_KEY } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+  const data = await res.json();
+  if (!data.Response) throw new Error(`Invalid response from ${url}`);
+  return data.Response;
 }
 
-const HEADERS = { "X-API-Key": API_KEY };
-const BUNGIE = "https://www.bungie.net/Platform";
-const CDN = "https://www.bungie.net";
-const XUR_VENDOR_HASH = 2190858386;
-const OUT_PATH = path.join("public", "data", "xur_inventory.json");
+// Main function
+async function main() {
+  console.log("Fetching public vendor sales…");
+  const vendors = await bungieGet("/Vendors/?components=402,302,400");
+  const vendor = vendors.sales.data[VENDOR_HASH];
+  if (!vendor) throw new Error("No Xûr sales found.");
 
-// Minimal delay to respect rate limits; keeps things polite.
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const saleItems = Object.values(vendor.saleItems);
+  console.log(`Found ${saleItems.length} sale items. Enriching with Manifest…`);
 
-// Fetch public vendors; component 402 = VendorSales
-async function getPublicVendors() {
-  const url = `${BUNGIE}/Destiny2/Vendors/?components=402`;
-  const res = await fetch(url, { headers: HEADERS });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`GetPublicVendors failed ${res.status}; ${body}`);
+  const enriched = [];
+  for (const sale of saleItems) {
+    const itemHash = sale.itemHash;
+    const item = await bungieGet(`/Manifest/DestinyInventoryItemDefinition/${itemHash}/`);
+    const def = item;
+
+    enriched.push({
+      itemHash,
+      name: def.displayProperties?.name || "Unknown",
+      icon: `https://www.bungie.net${def.displayProperties?.icon || ""}`,
+      tier: def.inventory?.tierTypeName || "",
+      type: def.itemTypeDisplayName || def.itemTypeAndTierDisplayName || "",
+      category: computeCategory(def),
+    });
+
+    await new Promise((r) => setTimeout(r, 200)); // throttle
   }
-  const json = await res.json();
-  return json?.Response;
-}
 
-// Fetch a single item definition from the Manifest
-async function getItemDef(itemHash) {
-  const url = `${BUNGIE}/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}`;
-  const res = await fetch(url, { headers: HEADERS });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`ItemDef ${itemHash} failed ${res.status}; ${body}`);
+  const categorized = {};
+  const sortOrder = [
+    "Multivarious Strange Offers",
+    "Exotic Gear",
+    "Legendary Weapons",
+    "Legendary Armor",
+    "Loyalty Program of the Nine",
+    "Strange Material Offers",
+    "Strange Repeatable Offers",
+  ];
+
+  for (const cat of sortOrder) categorized[cat] = [];
+
+  for (const item of enriched) {
+    const cat = item.category;
+    if (!categorized[cat]) categorized[cat] = [];
+    categorized[cat].push(item);
   }
-  const json = await res.json();
-  return json?.Response;
+
+  const output = {
+    vendorHash: VENDOR_HASH,
+    generatedAt: new Date().toISOString(),
+    source: "Destiny2.GetPublicVendors + Manifest",
+    categories: categorized,
+  };
+
+  await fs.promises.mkdir(path.dirname(OUT_PATH), { recursive: true });
+  await fs.promises.writeFile(OUT_PATH, JSON.stringify(output, null, 2));
+
+  console.log(`Wrote ${OUT_PATH}`);
 }
 
-// Simple categorizer; tune as you like later
+// Category computation aligned with WhereIsXur.com
 function computeCategory(def) {
   const tier = def?.inventory?.tierTypeName?.toLowerCase() || "";
   const type = def?.itemTypeDisplayName?.toLowerCase() || def?.itemTypeAndTierDisplayName?.toLowerCase() || "";
   const name = def?.displayProperties?.name?.toLowerCase() || "";
 
-  // Exotic class items and catalysts
+  // Multivarious Strange Offers: Exotic class items & catalysts
   if (/(relativism|solipsism|stoicism)/i.test(name)) return "Multivarious Strange Offers";
   if (/catalyst/i.test(type) || /catalyst/i.test(name)) return "Multivarious Strange Offers";
 
-  // Exotic Engram, Exotic Weapons, and Armor
-  if (/exotic/i.test(tier) && /weapon/i.test(type)) return "Exotic Gear";
-  if (/exotic/i.test(tier) && /armor/i.test(type)) return "Exotic Gear";
-  if (/exotic/i.test(tier) && /engram/i.test(type)) return "Exotic Gear";
+  // Exotic Gear
+  if (/exotic/i.test(tier) && (/weapon|armor|engram/i.test(type))) return "Exotic Gear";
 
-  // Legendary weapons and armor
+  // Legendary Weapons & Armor
   if (/legendary/i.test(tier) && /weapon/i.test(type)) return "Legendary Weapons";
   if (/legendary/i.test(tier) && /armor/i.test(type)) return "Legendary Armor";
 
-  // Loyalty Program / Reset Rank
+  // Loyalty Program of the Nine
   if (/loyalty/i.test(name) || /reset rank/i.test(name)) return "Loyalty Program of the Nine";
 
-  // Materials and consumables
+  // Strange Material Offers
   if (/material|currency|shard|core|prism|consumable|upgrade/i.test(type) || /ascendant/i.test(name))
     return "Strange Material Offers";
 
-  // Repeatable items or bounties
+  // Strange Repeatable Offers
   if (/repeatable|bounty/i.test(name)) return "Strange Repeatable Offers";
 
-  // Default fallback
+  // Default
   return "Multivarious Strange Offers";
 }
 
-const sortOrder = [
-  "Multivarious Strange Offers",
-  "Exotic Gear",
-  "Legendary Weapons",
-  "Legendary Armor",
-  "Loyalty Program of the Nine",
-  "Strange Material Offers",
-  "Strange Repeatable Offers"
-];
-
-
-function toSafeFilename(s) {
-  return s
-    .replace(/[\/\\?%*:|"<>]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-async function main() {
-  console.log("Fetching public vendor sales…");
-  const resp = await getPublicVendors();
-
-  // Public vendors payload layout:
-  // resp.sales.data is keyed by vendorHash; each contains saleItems keyed by saleIndex.
-  const vendorSales = resp?.sales?.data?.[XUR_VENDOR_HASH]?.saleItems;
-  if (!vendorSales) {
-    throw new Error("Xûr not present in public vendors or structure changed.");
-  }
-
-  const saleItems = Object.values(vendorSales); // each has itemHash, costs, etc.
-
-  console.log(`Found ${saleItems.length} sale items. Enriching with Manifest…`);
-  const items = [];
-  for (const sale of saleItems) {
-    const { itemHash, costs = [], quantity = 1 } = sale;
-    try {
-      const def = await getItemDef(itemHash);
-      await sleep(120); // gentle pacing
-
-      const name = def?.displayProperties?.name || `Hash ${itemHash}`;
-      const icon = def?.displayProperties?.icon ? CDN + def.displayProperties.icon : null;
-      const tier = def?.inventory?.tierTypeName || null;
-      const type = def?.itemTypeDisplayName || def?.itemTypeAndTierDisplayName || null;
-
-      items.push({
-        itemHash,
-        name,
-        icon,
-        tier,
-        type,
-        quantity,
-        category: computeCategory(def),
-        collectibleHash: def?.collectibleHash ?? null,
-        bucketTypeHash: def?.inventory?.bucketTypeHash ?? null,
-        classType: def?.classType ?? null
-      });
-    } catch (e) {
-      console.error(`Item ${itemHash} failed: ${e.message}`);
-    }
-  }
-
-  // Group by category for your frontend
-  const grouped = items.reduce((acc, it) => {
-    const key = it.category || "Other";
-    acc[key] = acc[key] || [];
-    acc[key].push(it);
-    return acc;
-  }, {});
-
-  // Sorted keys; put Exotics first; adjust as needed
-  const sortOrder = [
-    "Exotic Weapons",
-    "Exotic Armor",
-    "Exotic Class Items",
-    "Catalysts",
-    "Legendary Weapons",
-    "Legendary Armor",
-    "Strange Material Offers",
-    "Other Weapons",
-    "Other Armor",
-    "Other"
-  ];
-  const ordered = {};
-  for (const k of sortOrder) {
-    if (grouped[k]?.length) ordered[k] = grouped[k];
-  }
-  for (const k of Object.keys(grouped)) {
-    if (!ordered[k]) ordered[k] = grouped[k];
-  }
-
-  // Ensure output directory exists
-  await fs.mkdir(path.dirname(OUT_PATH), { recursive: true });
-
-  // Include metadata for cache busting and display
-  const payload = {
-    vendorHash: XUR_VENDOR_HASH,
-    generatedAt: new Date().toISOString(),
-    source: "Destiny2.GetPublicVendors + Manifest",
-    categories: ordered
-  };
-
-  await fs.writeFile(OUT_PATH, JSON.stringify(payload, null, 2), "utf8");
-  console.log(`Wrote ${OUT_PATH}`);
-}
-
-main().catch((e) => {
-  console.error(e);
+// Run main
+main().catch((err) => {
+  console.error("Error:", err);
   process.exit(1);
 });
