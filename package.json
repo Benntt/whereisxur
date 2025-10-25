@@ -1,13 +1,13 @@
 {
   "name": "whereisxur-updater",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
-    "build": "node src/fetch_xur.js"
+    "build": "node src/fetch_xur_auth.js",
+    "get-refresh-token": "node src/oauth_get_refresh_token.js"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "node-fetch": "3.3.2"
   }
 }
-
