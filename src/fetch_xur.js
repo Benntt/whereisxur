@@ -2,27 +2,22 @@ import fetch from "node-fetch";
 import fs from "fs";
 
 const API_KEY = process.env.BUNGIE_API_KEY;
-const REFRESH_TOKEN = process.env.BUNGIE_REFRESH_TOKEN;
 const CLIENT_ID = process.env.BUNGIE_CLIENT_ID;
 const CLIENT_SECRET = process.env.BUNGIE_CLIENT_SECRET;
-
-const MEMBERSHIP_TYPE = 3; // 1=Xbox, 2=PSN, 3=Steam, 4=Blizzard, 5=Stadia, etc.
-const MEMBERSHIP_ID = "21329669"; // your Bungie.net membership ID (not character)
+const REFRESH_TOKEN = process.env.BUNGIE_REFRESH_TOKEN;
 const XUR_VENDOR_HASH = 2190858386;
 const DATA_FILE = "./data/xur_inventory.json";
 
-async function bungieGet(endpoint, accessToken) {
-  const res = await fetch(`https://www.bungie.net/Platform${endpoint}`, {
+async function bungieFetch(url, accessToken) {
+  const res = await fetch(`https://www.bungie.net/Platform${url}`, {
     headers: {
       "X-API-Key": API_KEY,
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status}: ${endpoint}\n${text}`);
-  }
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}\n${JSON.stringify(data)}`);
+  return data;
 }
 
 async function refreshAccessToken() {
@@ -36,26 +31,40 @@ async function refreshAccessToken() {
       client_secret: CLIENT_SECRET,
     }),
   });
-  if (!res.ok) throw new Error("Token refresh failed");
+  if (!res.ok) throw new Error(`Token refresh failed: ${res.status}`);
   const data = await res.json();
+  if (!data.access_token) throw new Error("No access_token returned");
   return data.access_token;
 }
 
-async function getCharacterId(accessToken) {
-  const profile = await bungieGet(
-    `/Destiny2/${MEMBERSHIP_TYPE}/Profile/${MEMBERSHIP_ID}/?components=200`,
+async function getDestinyMembershipId(accessToken) {
+  const data = await bungieFetch("/User/GetMembershipsForCurrentUser/", accessToken);
+  const memberships = data.Response.destinyMemberships;
+  if (!memberships || memberships.length === 0) {
+    throw new Error("No Destiny memberships found for this Bungie account");
+  }
+  const membership = memberships.find((m) => m.membershipType === 3) || memberships[0];
+  return {
+    membershipId: membership.membershipId,
+    membershipType: membership.membershipType,
+  };
+}
+
+async function getFirstCharacterId(membershipType, membershipId, accessToken) {
+  const profile = await bungieFetch(
+    `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`,
     accessToken
   );
   const chars = profile.Response.characters?.data;
   if (!chars || Object.keys(chars).length === 0) {
-    throw new Error("No characters found for this account.");
+    throw new Error("No characters found for this account");
   }
-  return Object.keys(chars)[0]; // just use the first character
+  return Object.keys(chars)[0];
 }
 
-async function fetchVendor(accessToken, characterId) {
-  const vendor = await bungieGet(
-    `/Destiny2/${MEMBERSHIP_TYPE}/Profile/${MEMBERSHIP_ID}/Character/${characterId}/Vendors/${XUR_VENDOR_HASH}/?components=402,400,302`,
+async function fetchXurInventory(membershipType, membershipId, characterId, accessToken) {
+  const vendor = await bungieFetch(
+    `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}/Vendors/${XUR_VENDOR_HASH}/?components=402,400,302`,
     accessToken
   );
   return vendor.Response;
@@ -66,10 +75,12 @@ async function main() {
 
   try {
     const accessToken = await refreshAccessToken();
-    const characterId = await getCharacterId(accessToken);
+    const { membershipId, membershipType } = await getDestinyMembershipId(accessToken);
+    const characterId = await getFirstCharacterId(membershipType, membershipId, accessToken);
 
-    console.log(`Using character ${characterId}`);
-    const vendor = await fetchVendor(accessToken, characterId);
+    console.log(`Using membership ${membershipId} (${membershipType}), character ${characterId}`);
+
+    const vendor = await fetchXurInventory(membershipType, membershipId, characterId, accessToken);
 
     const output = {
       vendorHash: XUR_VENDOR_HASH,
