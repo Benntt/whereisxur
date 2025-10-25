@@ -1,0 +1,17 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Build and cache
+dist/
+tmp/
+.env
+
+# Bungie manifest too large
+data/manifest.json
+
+# Local data not needed in GitHub Action
+data/xur-inventory.json
+data/xur_inventory.json
+data/xur_inventory_enriched.json
