@@ -25,8 +25,8 @@ async function fetchDefinition(itemHash) {
     icon: def.displayProperties?.icon
       ? `https://www.bungie.net${def.displayProperties.icon}`
       : null,
-    type: def.itemTypeDisplayName || "Unknown",
-    tier: def.inventory?.tierTypeName || "Unknown",
+    type: def.itemTypeDisplayName || "Unknown Type",
+    tier: def.inventory?.tierTypeName || "Unknown Tier",
   };
 }
 
@@ -39,12 +39,12 @@ async function enrichInventory() {
   const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, "utf8"));
   const categories = inventory.categories || {};
 
-  const itemHashes = [];
-  Object.values(categories).forEach(category => {
-    if (category.itemHash) itemHashes.push(category.itemHash);
-  });
+  // Extract all itemHash values directly from each category
+  const itemHashes = Object.values(categories)
+    .map(c => c.itemHash)
+    .filter(Boolean);
 
-  console.log(`Found ${itemHashes.length} item hashes.`);
+  console.log(`Found ${itemHashes.length} item hashes to enrich.`);
 
   const results = [];
   for (const hash of itemHashes) {
