@@ -1,69 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Where Is Xûr</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <title>Where Is Xûr — Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #0b0c10; color: #e8e8e8; }
+    header { padding: 24px; text-align: center; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 1fr minmax(0, 760px) 1fr; gap: 16px; }
+    .center { grid-column: 2; }
+    h2 { margin: 24px 0 8px; font-size: 20px; border-bottom: 1px solid #30343a; padding-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .card { background: #14171b; border: 1px solid #2a2f36; border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center; }
+    .card img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #2a2f36; }
+    .meta { display: flex; flex-direction: column; }
+    .name { font-weight: 600; }
+    .sub { font-size: 12px; opacity: 0.85; }
+    .stamp { font-size: 12px; opacity: 0.7; margin-top: 8px; }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <h1>WHERE IS XÛR</h1>
-    <nav class="nav-links">
-      <a href="index.html">HOME</a>
-      <a href="https://whereisxur.com/tower" target="_blank">LOCATION</a>
-      <a href="https://twitter.com/whereisxur" target="_blank">TWITTER</a>
-      <a href="https://twitch.tv/damnitbennett" target="_blank">LIVE</a>
-    </nav>
+  <header>
+    <h1>Where Is Xûr</h1>
+    <div id="stamp" class="stamp"></div>
   </header>
 
-  <!-- GRID FRAME -->
-  <div class="page-frame">
-
-    <div class="column left-col"></div>
-
-    <div class="column center-col">
-      <section class="top-banner">
-        <div class="countdown-block">
-          <p class="subtitle">⚠️ XÛR LEAVES EVERY TUESDAY AT <strong>5:00 PM UTC</strong></p>
-          <div id="countdown-timer" class="countdown">Loading...</div>
-        </div>
-        <div id="xur-status" class="status-block">
-          <p>Checking Xûr’s status...</p>
-        </div>
-      </section>
-
-      <section class="map-header">
-        <img
-          src="https://whereisxur.com/wp-content/uploads/2024/06/Tower-Bazaar.png"
-          alt="Map of the Tower Bazaar"
-          class="map-image"
-        >
-        <div class="map-caption">
-          <p>The Tower Bazaar — Xûr’s permanent location</p>
-        </div>
-      </section>
-
-      <main class="main-content">
-        <h2>Current Inventory</h2>
-        <div id="inventory-output">Loading Xûr’s inventory...</div>
-
-        <section class="lore-box">
-          <h3>Who is Xûr?</h3>
-          <p>Xûr, Agent of the Nine, appears in <strong>Destiny 2</strong> every Friday at 5 PM UTC and leaves Tuesday at 5 PM UTC. He offers Exotic and Legendary gear in exchange for Strange Coins.</p>
-          <p>His location is always the <strong>Tower Bazaar</strong>, though his inventory changes weekly.</p>
-          <p>Visit <a href="http://whereisxur.com/tower" target="_blank">whereisxur.com/tower</a> for directions.</p>
-        </section>
-      </main>
-
-      <footer class="site-footer">
-        <p>&copy; 2025 WhereIsXur.com — Fan site not affiliated with Bungie.</p>
-      </footer>
-    </div>
-
-    <div class="column right-col"></div>
+  <div class="container">
+    <div></div>
+    <main class="center" id="main"></main>
+    <div></div>
   </div>
 
-  <script src="js/script.js"></script>
+  <script>
+    async function load() {
+      const res = await fetch("./data/xur_inventory.json", { cache: "no-cache" });
+      if (!res.ok) {
+        document.getElementById("main").textContent = "Inventory not available.";
+        return;
+      }
+      const data = await res.json();
+      const main = document.getElementById("main");
+      document.getElementById("stamp").textContent = `Updated: ${new Date(data.generatedAt).toLocaleString()}`;
+
+      for (const [category, items] of Object.entries(data.categories)) {
+        const h = document.createElement("h2");
+        h.textContent = category;
+        main.appendChild(h);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        for (const it of items) {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const img = document.createElement("img");
+          img.src = it.icon || "";
+          img.alt = it.name;
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const name = document.createElement("div");
+          name.className = "name";
+          name.textContent = it.name;
+
+          const sub = document.createElement("div");
+          sub.className = "sub";
+          sub.textContent = [it.tier, it.type].filter(Boolean).join(" • ");
+
+          meta.appendChild(name);
+          meta.appendChild(sub);
+
+          card.appendChild(img);
+          card.appendChild(meta);
+          grid.appendChild(card);
+        }
+
+        main.appendChild(grid);
+      }
+    }
+    load();
+  </script>
 </body>
 </html>
