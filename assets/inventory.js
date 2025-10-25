@@ -1,65 +1,46 @@
 async function loadXurInventory() {
-  const inventoryContainer = document.getElementById("xur-inventory");
-  inventoryContainer.innerHTML = "<p>Loading Xûr’s inventory...</p>";
+  const container = document.getElementById("xur-inventory");
+  container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
 
   try {
-    const response = await fetch("./data/xur_inventory_enriched.json");
-    if (!response.ok) throw new Error("Failed to fetch Xûr data");
+    const res = await fetch("./data/xur_inventory.json");
+    if (!res.ok) throw new Error("Failed to load inventory");
+    const data = await res.json();
 
-    const data = await response.json();
-    inventoryContainer.innerHTML = "";
+    container.innerHTML = "";
+    for (const [category, items] of Object.entries(data.categories)) {
+      const h2 = document.createElement("h2");
+      h2.textContent = category;
+      container.appendChild(h2);
 
-    if (!data.categories || Object.keys(data.categories).length === 0) {
-      inventoryContainer.innerHTML = "<p>No items available from Xûr right now.</p>";
-      return;
-    }
+      const grid = document.createElement("div");
+      grid.classList.add("inventory-grid");
 
-    // Create grid
-    const grid = document.createElement("div");
-    grid.classList.add("inventory-grid");
-
-    let itemCount = 0;
-
-    Object.values(data.categories).forEach(category => {
-      if (!category.saleItems) return;
-
-      Object.values(category.saleItems).forEach(item => {
-        // Only show active sale items
-        if (item.saleStatus !== 2 || !item.costs || item.costs.length === 0) return;
-
+      items.forEach(item => {
         const card = document.createElement("div");
         card.classList.add("item-card");
 
         const img = document.createElement("img");
-        img.src = item.displayProperties?.icon
-          ? `https://www.bungie.net${item.displayProperties.icon}`
-          : "https://www.bungie.net/img/destiny_content/legends/icons/destiny2_icon.jpg";
-        img.alt = item.displayProperties?.name || "Destiny Item";
+        img.src = item.icon;
+        img.alt = item.name;
 
-        const title = document.createElement("h3");
-        title.textContent = item.displayProperties?.name || `Unknown Item`;
+        const name = document.createElement("h3");
+        name.textContent = item.name;
 
         const type = document.createElement("p");
-        type.classList.add("xur-type");
-        type.textContent = item.itemTypeDisplayName || "";
+        type.textContent = item.type || "";
 
         card.appendChild(img);
-        card.appendChild(title);
+        card.appendChild(name);
         card.appendChild(type);
         grid.appendChild(card);
-        itemCount++;
       });
-    });
 
-    if (itemCount === 0) {
-      inventoryContainer.innerHTML = "<p>No active items found from Xûr.</p>";
-    } else {
-      inventoryContainer.appendChild(grid);
+      container.appendChild(grid);
     }
-
-  } catch (error) {
-    console.error("Error loading Xûr inventory:", error);
-    inventoryContainer.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
   }
 }
 
