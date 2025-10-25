@@ -1,5 +1,5 @@
 {
   "vendorHash": 2190858386,
-  "generatedAt": "2025-10-25T16:46:16.973Z",
-  "categories": {}
+  "generatedAt": "2025-10-25T16:50:10.481Z",
+  "error": "HTTP 500: /Destiny2/3/Profile/21329669/?components=200\n{\"ErrorCode\":8,\"ThrottleSeconds\":0,\"ErrorStatus\":\"ParameterInvalidRange\",\"Message\":\"One or more parameters are outside the range of valid values.  Please correct them, and try again.\",\"MessageData\":{\"destinyMembershipId\":\"Not a valid Destiny membership ID\"}}"
 }
