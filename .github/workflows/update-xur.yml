@@ -29,15 +29,16 @@ jobs:
           BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
         run: npm run build
 
-      - name: Commit JSON
+            - name: Commit JSON
         run: |
-          mkdir -p public/data
+          mkdir -p data
           git config user.name "xur-bot"
           git config user.email "xur-bot@users.noreply.github.com"
-          git add public/data/xur_inventory.json
+          git add data/xur_inventory.json
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "Update xur_inventory.json"
             git push
           fi
+
