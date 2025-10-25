@@ -1,17 +1,16 @@
 name: Update Xur Inventory
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
   schedule:
-    # Run hourly from Friday through Tuesday
-    - cron: "5 * * * *"
+    - cron: "17 17 * * FRI"   # Fridays 17:17 UTC; adjust as needed
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,13 +18,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
       - name: Install deps
         run: npm install
 
-      - name: Build JSON
+      - name: Build JSON (OAuth)
         env:
+          BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
+          BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
+          BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
+          # Optional; can be empty
           BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
         run: npm run build
 
