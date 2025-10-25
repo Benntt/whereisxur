@@ -1,116 +1,52 @@
-import fetch from "node-fetch";
-import fs from "fs";
+name: Update Xur Inventory
 
-const API_KEY = process.env.BUNGIE_API_KEY;
-const CLIENT_ID = process.env.BUNGIE_CLIENT_ID;
-const CLIENT_SECRET = process.env.BUNGIE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.BUNGIE_REFRESH_TOKEN;
+on:
+  schedule:
+    # Runs every hour Friday through Tuesday
+    - cron: "0 * * * 5"  # Friday
+    - cron: "0 * * * 6"  # Saturday
+    - cron: "0 * * * 0"  # Sunday
+    - cron: "0 * * * 1"  # Monday
+    - cron: "0 * * * 2"  # Tuesday
+  workflow_dispatch:
 
-const XUR_VENDOR_HASH = 2190858386;
-const DATA_FILE = "./data/xur_inventory.json";
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-async function bungieFetch(url, accessToken) {
-  const res = await fetch(`https://www.bungie.net/Platform${url}`, {
-    headers: {
-      "X-API-Key": API_KEY,
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+    env:
+      BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
+      BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
+      BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
+      BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
 
-  const data = await res.json();
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}: ${url}\n${JSON.stringify(data)}`);
-  }
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-  return data;
-}
+      - name: Install dependencies
+        run: npm install
 
-async function refreshAccessToken() {
-  const res = await fetch("https://www.bungie.net/Platform/App/OAuth/Token/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: REFRESH_TOKEN,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-    }),
-  });
+      - name: Fetch Xur inventory
+        run: node src/fetch_xur.js
 
-  if (!res.ok) throw new Error(`Token refresh failed: ${res.status}`);
-  const data = await res.json();
-  if (!data.access_token) throw new Error("No access_token returned");
-  return data.access_token;
-}
+      - name: Enrich inventory with definitions
+        run: node src/fetch_definitions.js
 
-async function getMembershipData(accessToken) {
-  const res = await bungieFetch("/User/GetMembershipsForCurrentUser/", accessToken);
-  const memberships = res.Response?.destinyMemberships;
-  if (!memberships || memberships.length === 0) {
-    throw new Error("No Destiny memberships found for this Bungie account");
-  }
-
-  // Prioritize Steam/PC (type 3), otherwise use first available
-  const preferred = memberships.find((m) => m.membershipType === 3) || memberships[0];
-  return {
-    membershipId: preferred.membershipId,
-    membershipType: preferred.membershipType,
-  };
-}
-
-async function getCharacterId(membershipType, membershipId, accessToken) {
-  const res = await bungieFetch(
-    `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`,
-    accessToken
-  );
-
-  const chars = res.Response?.characters?.data;
-  if (!chars || Object.keys(chars).length === 0) {
-    throw new Error("No characters found for this profile");
-  }
-
-  return Object.keys(chars)[0];
-}
-
-async function fetchXurInventory(membershipType, membershipId, characterId, accessToken) {
-  const res = await bungieFetch(
-    `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}/Vendors/${XUR_VENDOR_HASH}/?components=402,400,302`,
-    accessToken
-  );
-
-  return res.Response;
-}
-
-async function main() {
-  console.log("Fetching Xur inventory…");
-
-  try {
-    const accessToken = await refreshAccessToken();
-    const { membershipId, membershipType } = await getMembershipData(accessToken);
-    const characterId = await getCharacterId(membershipType, membershipId, accessToken);
-
-    console.log(`Using membership ${membershipId} (${membershipType}) character ${characterId}`);
-
-    const vendor = await fetchXurInventory(membershipType, membershipId, characterId, accessToken);
-
-    const output = {
-      vendorHash: XUR_VENDOR_HASH,
-      generatedAt: new Date().toISOString(),
-      categories: vendor?.sales?.data || {},
-    };
-
-    fs.writeFileSync(DATA_FILE, JSON.stringify(output, null, 2));
-    console.log(`✓ Wrote ${DATA_FILE}`);
-  } catch (err) {
-    console.error("✗ Xur fetch failed:", err.message);
-    const fallback = {
-      vendorHash: XUR_VENDOR_HASH,
-      generatedAt: new Date().toISOString(),
-      error: err.message,
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(fallback, null, 2));
-  }
-}
-
-main();
+      - name: Commit and push updates
+        run: |
+          mkdir -p data
+          git config user.name "xur-bot"
+          git config user.email "xur-bot@users.noreply.github.com"
+          git add data/xur_inventory.json data/xur_inventory_enriched.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update Xur inventory and definitions"
+            git push
+          fi
