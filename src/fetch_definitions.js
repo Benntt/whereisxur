@@ -37,27 +37,45 @@ async function enrichInventory() {
   }
 
   const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, "utf8"));
-  const categories = inventory.categories || {};
 
-  // Extract all itemHash values directly from each category
-  const itemHashes = Object.values(categories)
-    .map(c => c.itemHash)
-    .filter(Boolean);
+  // Dynamically extract all hashes regardless of structure
+  const itemHashes = new Set();
 
-  console.log(`Found ${itemHashes.length} item hashes to enrich.`);
+  // Case 1: saleItems array
+  if (Array.isArray(inventory.saleItems)) {
+    inventory.saleItems.forEach(item => {
+      if (item.itemHash) itemHashes.add(item.itemHash);
+    });
+  }
+
+  // Case 2: nested categories
+  if (inventory.categories && typeof inventory.categories === "object") {
+    Object.values(inventory.categories).forEach(category => {
+      if (category.itemHash) itemHashes.add(category.itemHash);
+    });
+  }
+
+  // Case 3: vendorGroups or vendor data
+  if (inventory.vendors) {
+    Object.values(inventory.vendors).forEach(vendor => {
+      if (vendor.saleItems) {
+        Object.values(vendor.saleItems).forEach(item => {
+          if (item.itemHash) itemHashes.add(item.itemHash);
+        });
+      }
+    });
+  }
+
+  const hashes = [...itemHashes];
+  console.log(`Found ${hashes.length} unique item hashes to enrich.`);
 
   const results = [];
-  for (const hash of itemHashes) {
+  for (const hash of hashes) {
     const enriched = await fetchDefinition(hash);
     if (enriched) results.push(enriched);
   }
 
-  fs.writeFileSync(
-    OUTPUT_PATH,
-    JSON.stringify(results, null, 2),
-    "utf8"
-  );
-
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(results, null, 2), "utf8");
   console.log(`✅ Enriched inventory saved to ${OUTPUT_PATH}`);
 }
 
