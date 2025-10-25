@@ -8,10 +8,7 @@ const OUTPUT_PATH = path.resolve("data/xur_inventory_enriched.json");
 
 async function fetchDefinition(itemHash) {
   const url = `https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}/`;
-  const res = await fetch(url, {
-    headers: { "X-API-Key": API_KEY },
-  });
-
+  const res = await fetch(url, { headers: { "X-API-Key": API_KEY } });
   if (!res.ok) {
     console.warn(`⚠️ Failed to fetch item ${itemHash}: ${res.status}`);
     return null;
@@ -37,33 +34,16 @@ async function enrichInventory() {
   }
 
   const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, "utf8"));
-
-  // Dynamically extract all hashes regardless of structure
   const itemHashes = new Set();
 
-  // Case 1: saleItems array
-  if (Array.isArray(inventory.saleItems)) {
-    inventory.saleItems.forEach(item => {
-      if (item.itemHash) itemHashes.add(item.itemHash);
-    });
-  }
-
-  // Case 2: nested categories
-  if (inventory.categories && typeof inventory.categories === "object") {
-    Object.values(inventory.categories).forEach(category => {
-      if (category.itemHash) itemHashes.add(category.itemHash);
-    });
-  }
-
-  // Case 3: vendorGroups or vendor data
-  if (inventory.vendors) {
-    Object.values(inventory.vendors).forEach(vendor => {
-      if (vendor.saleItems) {
-        Object.values(vendor.saleItems).forEach(item => {
-          if (item.itemHash) itemHashes.add(item.itemHash);
-        });
+  if (inventory.categories) {
+    for (const category of Object.values(inventory.categories)) {
+      if (category.saleItems) {
+        for (const sale of Object.values(category.saleItems)) {
+          if (sale.itemHash) itemHashes.add(sale.itemHash);
+        }
       }
-    });
+    }
   }
 
   const hashes = [...itemHashes];
