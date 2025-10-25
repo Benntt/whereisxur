@@ -7,39 +7,46 @@ async function loadXurInventory() {
     if (!res.ok) throw new Error("Failed to load inventory");
     const data = await res.json();
 
-    container.innerHTML = "";
     const categories = data.categories || {};
-    const items = [];
+    const itemHashes = [];
 
-    // Flatten all saleItems across categories
     Object.values(categories).forEach(category => {
       if (category.saleItems) {
-        Object.values(category.saleItems).forEach(sale => items.push(sale));
+        Object.values(category.saleItems).forEach(sale => {
+          if (sale.itemHash) itemHashes.push(sale.itemHash);
+        });
       }
     });
 
-    if (items.length === 0) {
+    if (itemHashes.length === 0) {
       container.innerHTML = "<p>No items available from Xûr right now.</p>";
       return;
     }
 
+    container.innerHTML = "";
     const grid = document.createElement("div");
     grid.classList.add("inventory-grid");
 
-    items.slice(0, 40).forEach(item => {
-      const display = item.displayProperties || {};
+    // Use Bungie's manifest for lookups
+    for (const hash of itemHashes.slice(0, 40)) {
+      const manifestURL = `https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`;
+      let display = null;
+
+      try {
+        const manifestRes = await fetch(manifestURL, {
+          headers: { "X-API-Key": "YOUR_BUNGIE_API_KEY_HERE" } // replace this with your key
+        });
+        const manifestData = await manifestRes.json();
+        display = manifestData.Response?.displayProperties || {};
+      } catch (err) {
+        console.warn(`Failed to fetch manifest for ${hash}`);
+      }
 
       const icon = display.icon
         ? `https://www.bungie.net${display.icon}`
         : "https://www.bungie.net/img/theme/destiny/icons/icon_missing.png";
 
-      const name = display.name || `Item ${item.itemHash}`;
-      const type =
-        item.itemTypeDisplayName ||
-        item.classType ||
-        item.itemType ||
-        "Unknown Type";
-
+      const name = display.name || `Item ${hash}`;
       const card = document.createElement("div");
       card.classList.add("item-card");
 
@@ -50,14 +57,10 @@ async function loadXurInventory() {
       const nameEl = document.createElement("h3");
       nameEl.textContent = name;
 
-      const typeEl = document.createElement("p");
-      typeEl.textContent = type;
-
       card.appendChild(img);
       card.appendChild(nameEl);
-      card.appendChild(typeEl);
       grid.appendChild(card);
-    });
+    }
 
     container.appendChild(grid);
   } catch (err) {
