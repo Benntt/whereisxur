@@ -1,5 +1,120 @@
 {
   "vendorHash": 2190858386,
-  "generatedAt": "2025-10-25T15:25:39.558Z",
-  "categories": {}
+  "generatedAt": "2025-10-25T15:34:33.581Z",
+  "validNestedVendors": [
+    4248210736,
+    3910216754,
+    2978337238,
+    1980618587,
+    1803434835,
+    2024015888,
+    702981643,
+    3666112472,
+    3820147479,
+    1828251441,
+    1420473289,
+    569260333,
+    4234468055,
+    1871764335,
+    3109687656
+  ],
+  "categories": {
+    "Multivarious Strange Offers": [
+      {
+        "itemHash": 3158812152,
+        "name": "The Xûrfboard",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/0f9ed83ab7bbe0282f9974c62f930cf4.jpg",
+        "tier": "Exotic",
+        "type": "Vehicle",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 2551549824,
+        "name": "Citan's Ramparts",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/2e01a8839e2cb3f8c9f53bd01001d838.jpg",
+        "tier": "Exotic",
+        "type": "Gauntlets",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 730200061,
+        "name": "No Backup Plans",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/a5e7aadf7e00089690951e52c35afcbb.jpg",
+        "tier": "Exotic",
+        "type": "Gauntlets",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 3076343411,
+        "name": "Stoicism",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/9db95c112130c018f823f394668cfb5a.jpg",
+        "tier": "Exotic",
+        "type": "",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 1617663696,
+        "name": "More Strange Offers",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95bb18e6edbdc9b70ce9ffc077814f32.jpg",
+        "tier": "",
+        "type": "",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 3670668729,
+        "name": "Strange Gear Offers",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/51dcc6133effbed04c9221adbdd7d405.jpg",
+        "tier": "",
+        "type": "",
+        "category": "Multivarious Strange Offers"
+      },
+      {
+        "itemHash": 2125848607,
+        "name": "Xenology",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/8a45db3e03ace3dbc923b463d89886a3.jpg",
+        "tier": "Exotic",
+        "type": "Quest Step",
+        "category": "Multivarious Strange Offers"
+      }
+    ],
+    "Exotic Gear": [
+      {
+        "itemHash": 3642110725,
+        "name": "Ophidia Spathe",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/dac0f107efc0dc9c887ffef83fc1bf62.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "category": "Exotic Gear"
+      },
+      {
+        "itemHash": 2966741808,
+        "name": "Sanguine Alchemy",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/e55c1cbf65fabab485bbc34272f59b11.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "category": "Exotic Gear"
+      },
+      {
+        "itemHash": 1446374842,
+        "name": "Gifted Conviction",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/4365fd49261fb81d069d0db10acb9fd4.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "category": "Exotic Gear"
+      },
+      {
+        "itemHash": 888791258,
+        "name": "Rime-coat Raiment",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/16001620c3ec683e805fe68017167b69.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "category": "Exotic Gear"
+      }
+    ],
+    "Legendary Weapons": [],
+    "Legendary Armor": [],
+    "Loyalty Program of the Nine": [],
+    "Strange Material Offers": [],
+    "Strange Repeatable Offers": []
+  }
 }
