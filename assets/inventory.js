@@ -1,5 +1,5 @@
 // inventory.js
-// Loads and displays Xûr’s inventory from the enriched JSON data
+// Dynamically loads, groups, and displays Xûr's inventory with tabbed filtering
 
 async function loadXurInventory() {
   const container = document.getElementById('xur-inventory');
@@ -7,76 +7,104 @@ async function loadXurInventory() {
 
   try {
     const response = await fetch('data/xur_inventory_enriched.json');
-    if (!response.ok) throw new Error('Failed to load inventory file.');
+    if (!response.ok) throw new Error('Failed to load inventory data.');
 
     const data = await response.json();
     const categories = data.categories;
-    if (!categories) throw new Error('No categories found in inventory.');
+    if (!categories) throw new Error('Invalid or missing inventory categories.');
 
-    container.innerHTML = ''; // Clear placeholder text
+    container.innerHTML = '';
 
-    const itemEntries = Object.entries(categories)
-      .filter(([_, item]) => item.item && item.item.displayProperties)
-      .map(([_, item]) => item.item);
+    const items = Object.values(categories)
+      .filter(i => i.item && i.item.displayProperties)
+      .map(i => i.item);
 
-    if (itemEntries.length === 0) {
-      container.innerHTML = '<p>No items available right now.</p>';
+    if (items.length === 0) {
+      container.innerHTML = '<p>No items available from Xûr right now.</p>';
       return;
     }
 
-    const grouped = groupItemsByType(itemEntries);
+    const grouped = groupByCategory(items);
+    createTabs(container, grouped);
 
-    for (const [category, items] of Object.entries(grouped)) {
-      const section = document.createElement('section');
-      section.classList.add('xur-section');
-
-      const title = document.createElement('h2');
-      title.textContent = category;
-      section.appendChild(title);
-
-      const grid = document.createElement('div');
-      grid.classList.add('xur-grid');
-
-      for (const item of items) {
-        const card = document.createElement('div');
-        card.classList.add('xur-item');
-
-        const img = document.createElement('img');
-        img.src = `https://www.bungie.net${item.displayProperties.icon}`;
-        img.alt = item.displayProperties.name;
-
-        const name = document.createElement('h3');
-        name.textContent = item.displayProperties.name;
-
-        const type = document.createElement('p');
-        type.classList.add('xur-type');
-        type.textContent = item.itemTypeDisplayName || '';
-
-        card.appendChild(img);
-        card.appendChild(name);
-        card.appendChild(type);
-
-        grid.appendChild(card);
-      }
-
-      section.appendChild(grid);
-      container.appendChild(section);
-    }
-  } catch (error) {
-    console.error('Error loading Xûr inventory:', error);
-    container.innerHTML = `<p class="error">Failed to load Xûr's inventory.</p>`;
+  } catch (err) {
+    console.error('Error loading Xûr inventory:', err);
+    container.innerHTML = `<p class="error">Error loading Xûr inventory data.</p>`;
   }
 }
 
-function groupItemsByType(items) {
-  const groups = {};
+function groupByCategory(items) {
+  const groups = {
+    Weapons: [],
+    Armor: [],
+    Catalysts: [],
+    Other: []
+  };
+
   for (const item of items) {
-    const category = item.itemTypeDisplayName || 'Other';
-    if (!groups[category]) groups[category] = [];
-    groups[category].push(item);
+    const name = (item.itemTypeDisplayName || '').toLowerCase();
+    if (name.includes('weapon')) groups.Weapons.push(item);
+    else if (name.includes('armor') || name.includes('helmet') || name.includes('gauntlet') || name.includes('greaves') || name.includes('plate') || name.includes('cloak')) groups.Armor.push(item);
+    else if (name.includes('catalyst')) groups.Catalysts.push(item);
+    else groups.Other.push(item);
   }
+
   return groups;
 }
 
-// Initialize after DOM loads
+function createTabs(container, grouped) {
+  const tabBar = document.createElement('div');
+  tabBar.classList.add('xur-tabs');
+
+  const tabs = Object.keys(grouped).filter(category => grouped[category].length > 0);
+
+  tabs.forEach((tabName, index) => {
+    const tab = document.createElement('button');
+    tab.textContent = tabName;
+    tab.classList.add('xur-tab');
+    if (index === 0) tab.classList.add('active');
+    tab.addEventListener('click', () => showCategory(container, grouped, tabName, tabBar));
+    tabBar.appendChild(tab);
+  });
+
+  container.appendChild(tabBar);
+
+  const grid = document.createElement('div');
+  grid.classList.add('xur-grid');
+  container.appendChild(grid);
+
+  showCategory(container, grouped, tabs[0], tabBar);
+}
+
+function showCategory(container, grouped, category, tabBar) {
+  tabBar.querySelectorAll('.xur-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.textContent === category);
+  });
+
+  const grid = container.querySelector('.xur-grid');
+  grid.innerHTML = '';
+
+  const items = grouped[category];
+  for (const item of items) {
+    const card = document.createElement('div');
+    card.classList.add('xur-item');
+
+    const img = document.createElement('img');
+    img.src = `https://www.bungie.net${item.displayProperties.icon}`;
+    img.alt = item.displayProperties.name;
+
+    const name = document.createElement('h3');
+    name.textContent = item.displayProperties.name;
+
+    const type = document.createElement('p');
+    type.classList.add('xur-type');
+    type.textContent = item.itemTypeDisplayName || '';
+
+    card.appendChild(img);
+    card.appendChild(name);
+    card.appendChild(type);
+    grid.appendChild(card);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', loadXurInventory);
