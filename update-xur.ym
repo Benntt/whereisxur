@@ -1,0 +1,42 @@
+name: Update Xur Inventory
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Run hourly from Friday 09:05 UTC through Tuesday 18:05 UTC.
+    # You can relax or tighten this later.
+    - cron: "5 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build JSON
+        env:
+          BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
+        run: npm run build
+
+      - name: Commit JSON
+        run: |
+          git config user.name "xur-bot"
+          git config user.email "xur-bot@users.noreply.github.com"
+          git add public/data/xur_inventory.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update xur_inventory.json"
+            git push
+          fi

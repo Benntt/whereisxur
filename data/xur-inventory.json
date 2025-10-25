@@ -1,0 +1,41 @@
+{
+  "armor": {
+    "hunter": [
+      "Celestial Nighthawk",
+      "Lucky Raspberry",
+      "Relativism (Hunter Class Item)"
+    ],
+    "titan": [
+      "Synthoceps",
+      "One-Eyed Mask",
+      "Stoicism (Titan Class Item)"
+    ],
+    "warlock": [
+      "Lunafaction Boots",
+      "Transversive Steps",
+      "Solipsism (Warlock Class Item)"
+    ]
+  },
+  "catalysts": [
+    "Graviton Lance Catalyst",
+    "Tractor Cannon Catalyst"
+  ],
+  "exoticWeapons": [
+    "Hawkmoon",
+    "Crimson",
+    "Telesto",
+    "Graviton Lance"
+  ],
+  "legendaryWeapons": [
+    "IKELOS_SR_v1.0.3",
+    "Dire Promise",
+    "Funnelweb",
+    "Distant Tumulus",
+    "Judgment of Kelgorath",
+    "Heritage",
+    "Prolonged Engagement",
+    "Volta Bray II",
+    "Legal Action II"
+  ],
+  "timestamp": "2025-10-25T12:44:41.305Z"
+}

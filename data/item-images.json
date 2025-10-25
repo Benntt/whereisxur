@@ -1,0 +1,17 @@
+{
+  "Hawkmoon": "assets/weapons/hawkmoon.png",
+  "Crimson": "assets/weapons/crimson.png",
+  "Telesto": "assets/weapons/telesto.png",
+  "Graviton Lance": "assets/weapons/graviton-lance.png",
+  "IKELOS_SR_v1.0.3": "assets/weapons/ikelos-sr.png",
+  "Dire Promise": "assets/weapons/dire-promise.png",
+  "Celestial Nighthawk": "assets/armor/hunter-celestial-nighthawk.png",
+  "Lucky Raspberry": "assets/armor/hunter-lucky-raspberry.png",
+  "Relativism (Hunter Class Item)": "assets/armor/hunter-relativism.png",
+  "Synthoceps": "assets/armor/titan-synthoceps.png",
+  "Heart of Inmost Light": "assets/armor/titan-heart-of-inmost-light.png",
+  "Lion Rampant": "assets/armor/titan-lion-rampant.png",
+  "Lunafaction Boots": "assets/armor/warlock-lunafaction-boots.png",
+  "Chromatic Fire": "assets/armor/warlock-chromatic-fire.png",
+  "Eye of Another World": "assets/armor/warlock-eye-of-another-world.png"
+}

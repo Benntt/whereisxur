@@ -9,35 +9,36 @@
 <body>
   <header>
     <h1>UPDATE XÛR INVENTORY</h1>
-    <nav>
-      <a href="index.html">Home</a>
-    </nav>
+    <nav><a href="index.html">Return to Site</a></nav>
   </header>
 
   <main class="admin-page">
-    <section>
-      <p>Select everything Xûr is selling this week:</p>
+    <section id="admin-panel">
+      <p>Select all items available this week:</p>
 
-      <h2>Exotic Weapons</h2>
-      <div class="checkbox-group" id="exoticWeapons"></div>
+      <h2>Armor — Hunter</h2>
+      <div id="hunterArmor" class="checkbox-group"></div>
 
-      <h2>Exotic Armor</h2>
-      <div class="checkbox-group" id="exoticArmor"></div>
+      <h2>Armor — Titan</h2>
+      <div id="titanArmor" class="checkbox-group"></div>
 
-      <h2>Legendary Weapons</h2>
-      <div class="checkbox-group" id="legendaryWeapons"></div>
+      <h2>Armor — Warlock</h2>
+      <div id="warlockArmor" class="checkbox-group"></div>
 
-      <h2>Legendary Armor</h2>
-      <div class="checkbox-group" id="legendaryArmor"></div>
+      <h2>Exotic Weapons (4 total — Hawkmoon always included)</h2>
+      <div id="exoticWeapons" class="checkbox-group"></div>
 
-      <h2>Other Offers</h2>
-      <div class="checkbox-group" id="otherOffers"></div>
+      <h2>Legendary Weapons (9 total)</h2>
+      <div id="legendaryWeapons" class="checkbox-group"></div>
 
-      <button id="generate">Download JSON</button>
+      <h2>Catalysts (2 total)</h2>
+      <div id="catalysts" class="checkbox-group"></div>
+
+      <button id="generate">Download xur-inventory.json</button>
     </section>
 
-    <section id="current-data">
-      <h2>Preview</h2>
+    <section id="preview">
+      <h2>Preview JSON</h2>
       <pre id="preview-json" class="json-preview"></pre>
     </section>
   </main>
