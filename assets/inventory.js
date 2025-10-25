@@ -14,21 +14,22 @@ async function loadXurInventory() {
       return;
     }
 
-    // Create grid layout
+    // Create grid
     const grid = document.createElement("div");
     grid.classList.add("inventory-grid");
 
-    // Go through each category and then through its saleItems
+    let itemCount = 0;
+
     Object.values(data.categories).forEach(category => {
       if (!category.saleItems) return;
 
       Object.values(category.saleItems).forEach(item => {
-        if (!item.itemHash) return;
+        // Only show active sale items
+        if (item.saleStatus !== 2 || !item.costs || item.costs.length === 0) return;
 
         const card = document.createElement("div");
         card.classList.add("item-card");
 
-        // Use real Bungie icon if available
         const img = document.createElement("img");
         img.src = item.displayProperties?.icon
           ? `https://www.bungie.net${item.displayProperties.icon}`
@@ -36,7 +37,7 @@ async function loadXurInventory() {
         img.alt = item.displayProperties?.name || "Destiny Item";
 
         const title = document.createElement("h3");
-        title.textContent = item.displayProperties?.name || `Item ${item.itemHash}`;
+        title.textContent = item.displayProperties?.name || `Unknown Item`;
 
         const type = document.createElement("p");
         type.classList.add("xur-type");
@@ -46,10 +47,15 @@ async function loadXurInventory() {
         card.appendChild(title);
         card.appendChild(type);
         grid.appendChild(card);
+        itemCount++;
       });
     });
 
-    inventoryContainer.appendChild(grid);
+    if (itemCount === 0) {
+      inventoryContainer.innerHTML = "<p>No active items found from Xûr.</p>";
+    } else {
+      inventoryContainer.appendChild(grid);
+    }
 
   } catch (error) {
     console.error("Error loading Xûr inventory:", error);
