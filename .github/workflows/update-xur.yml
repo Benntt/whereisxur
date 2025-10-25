@@ -2,18 +2,12 @@ name: Update Xur Inventory
 
 on:
   schedule:
-    # Runs every hour Friday through Tuesday
-    - cron: "0 * * * 5"  # Friday
-    - cron: "0 * * * 6"  # Saturday
-    - cron: "0 * * * 0"  # Sunday
-    - cron: "0 * * * 1"  # Monday
-    - cron: "0 * * * 2"  # Tuesday
+    - cron: '0 * * * 5-2'  # Every hour from Friday to Tuesday
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
       BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
@@ -24,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -35,10 +29,10 @@ jobs:
       - name: Fetch Xur inventory
         run: node src/fetch_xur.js
 
-      - name: Enrich inventory with definitions
+      - name: Fetch item definitions
         run: node src/fetch_definitions.js
 
-      - name: Commit and push updates
+      - name: Commit and push changes
         run: |
           mkdir -p data
           git config user.name "xur-bot"
@@ -50,3 +44,11 @@ jobs:
             git commit -m "Update Xur inventory and definitions"
             git push
           fi
+
+      # --- Auto Deploy to GitHub Pages ---
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: main
+          publish_dir: .
