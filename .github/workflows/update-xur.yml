@@ -56,9 +56,16 @@ jobs:
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
           fi
 
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deploy
+          cp -r index.html assets css js public data/xur_inventory*.json deploy/
+          cd deploy
+          echo "Prepared deploy directory with site assets and data."
+
       - name: Deploy to GitHub Pages (gh-pages branch)
         run: |
-          rm -rf .git
+          cd deploy
           git init
           git config user.name "xur-bot"
           git config user.email "xur-bot@users.noreply.github.com"
