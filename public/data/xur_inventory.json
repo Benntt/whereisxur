@@ -1,0 +1,145 @@
+{
+  "vendorHash": 2190858386,
+  "generatedAt": "2025-10-25T14:25:05.476Z",
+  "source": "Destiny2.GetPublicVendors + Manifest",
+  "categories": {
+    "Exotic Armor": [
+      {
+        "itemHash": 3642110725,
+        "name": "Ophidia Spathe",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/dac0f107efc0dc9c887ffef83fc1bf62.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "quantity": 1,
+        "category": "Exotic Armor",
+        "collectibleHash": 3035639838,
+        "bucketTypeHash": 14239492,
+        "classType": 1
+      },
+      {
+        "itemHash": 2966741808,
+        "name": "Sanguine Alchemy",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/e55c1cbf65fabab485bbc34272f59b11.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "quantity": 1,
+        "category": "Exotic Armor",
+        "collectibleHash": 860077153,
+        "bucketTypeHash": 14239492,
+        "classType": 2
+      },
+      {
+        "itemHash": 1446374842,
+        "name": "Gifted Conviction",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/4365fd49261fb81d069d0db10acb9fd4.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "quantity": 1,
+        "category": "Exotic Armor",
+        "collectibleHash": 4152933652,
+        "bucketTypeHash": 14239492,
+        "classType": 1
+      },
+      {
+        "itemHash": 888791258,
+        "name": "Rime-coat Raiment",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/16001620c3ec683e805fe68017167b69.jpg",
+        "tier": "Exotic",
+        "type": "Chest Armor",
+        "quantity": 1,
+        "category": "Exotic Armor",
+        "collectibleHash": 4195554811,
+        "bucketTypeHash": 14239492,
+        "classType": 2
+      }
+    ],
+    "Other": [
+      {
+        "itemHash": 1617663696,
+        "name": "More Strange Offers",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95bb18e6edbdc9b70ce9ffc077814f32.jpg",
+        "tier": null,
+        "type": null,
+        "quantity": 1,
+        "category": "Other",
+        "collectibleHash": null,
+        "bucketTypeHash": 2422292810,
+        "classType": 3
+      },
+      {
+        "itemHash": 3670668729,
+        "name": "Strange Gear Offers",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/51dcc6133effbed04c9221adbdd7d405.jpg",
+        "tier": null,
+        "type": null,
+        "quantity": 1,
+        "category": "Other",
+        "collectibleHash": null,
+        "bucketTypeHash": 2422292810,
+        "classType": 3
+      }
+    ],
+    "Exotic": [
+      {
+        "itemHash": 3158812152,
+        "name": "The Xûrfboard",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/0f9ed83ab7bbe0282f9974c62f930cf4.jpg",
+        "tier": "Exotic",
+        "type": "Vehicle",
+        "quantity": 1,
+        "category": "Exotic",
+        "collectibleHash": 4027512252,
+        "bucketTypeHash": 2025709351,
+        "classType": 3
+      },
+      {
+        "itemHash": 2551549824,
+        "name": "Citan's Ramparts",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/2e01a8839e2cb3f8c9f53bd01001d838.jpg",
+        "tier": "Exotic",
+        "type": "Gauntlets",
+        "quantity": 1,
+        "category": "Exotic",
+        "collectibleHash": 1087913264,
+        "bucketTypeHash": 3551918588,
+        "classType": 0
+      },
+      {
+        "itemHash": 730200061,
+        "name": "No Backup Plans",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/a5e7aadf7e00089690951e52c35afcbb.jpg",
+        "tier": "Exotic",
+        "type": "Gauntlets",
+        "quantity": 1,
+        "category": "Exotic",
+        "collectibleHash": 4259407797,
+        "bucketTypeHash": 3551918588,
+        "classType": 0
+      },
+      {
+        "itemHash": 3076343411,
+        "name": "Stoicism",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/9db95c112130c018f823f394668cfb5a.jpg",
+        "tier": "Exotic",
+        "type": null,
+        "quantity": 1,
+        "category": "Exotic",
+        "collectibleHash": null,
+        "bucketTypeHash": 3621873013,
+        "classType": 3
+      },
+      {
+        "itemHash": 2125848607,
+        "name": "Xenology",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/8a45db3e03ace3dbc923b463d89886a3.jpg",
+        "tier": "Exotic",
+        "type": "Quest Step",
+        "quantity": 1,
+        "category": "Exotic",
+        "collectibleHash": null,
+        "bucketTypeHash": 1345459588,
+        "classType": 3
+      }
+    ]
+  }
+}
