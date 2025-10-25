@@ -1,67 +1,45 @@
 async function loadXurInventory() {
-  const container = document.getElementById("xur-inventory");
-  container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
-
   try {
     const response = await fetch("/whereisxur/data/xur_inventory_enriched.json");
-    
+    if (!response.ok) throw new Error("Failed to fetch Xûr data");
     const data = await response.json();
 
-    if (!data || !data.categories) {
-      container.innerHTML = "<p>No items available from Xûr right now.</p>";
+    const inventoryContainer = document.getElementById("xur-inventory");
+    inventoryContainer.innerHTML = "";
+
+    if (!data.categories || Object.keys(data.categories).length === 0) {
+      inventoryContainer.innerHTML = "<p>No items available from Xûr right now.</p>";
       return;
     }
 
-    const items = [];
-
-    // Flatten nested saleItems
-    for (const categoryKey in data.categories) {
-      const category = data.categories[categoryKey];
-      if (!category.saleItems) continue;
-
-      for (const saleKey in category.saleItems) {
-        const saleItem = category.saleItems[saleKey];
-        const itemHash = saleItem.itemHash;
-        const definition = data.definitions?.[itemHash];
-        if (!definition) continue;
-
-        items.push({
-          name: definition.displayProperties?.name || "Unknown Item",
-          description: definition.itemTypeDisplayName || "Unknown Type",
-          icon: definition.displayProperties?.icon
-            ? `https://www.bungie.net${definition.displayProperties.icon}`
-            : null,
-        });
-      }
-    }
-
-    if (!items.length) {
-      container.innerHTML = "<p>No items available from Xûr right now.</p>";
-      return;
-    }
-
-    // Build grid
+    // Create wrapper for layout (3 columns)
     const grid = document.createElement("div");
-    grid.className = "xur-grid";
+    grid.classList.add("inventory-grid");
 
-    for (const item of items) {
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "xur-item";
+    Object.values(data.categories).forEach(item => {
+      if (!item.itemHash) return;
 
-      itemDiv.innerHTML = `
-        ${item.icon ? `<img src="${item.icon}" alt="${item.name}">` : ""}
-        <h3>${item.name}</h3>
-        <p class="xur-type">${item.description}</p>
-      `;
+      const card = document.createElement("div");
+      card.classList.add("item-card");
 
-      grid.appendChild(itemDiv);
-    }
+      const img = document.createElement("img");
+      img.src = `https://www.bungie.net/common/destiny2_content/icons/${item.itemHash}.jpg`;
+      img.alt = item.itemHash;
 
-    container.innerHTML = "";
-    container.appendChild(grid);
+      const title = document.createElement("h3");
+      title.textContent = `Item Hash: ${item.itemHash}`;
+
+      card.appendChild(img);
+      card.appendChild(title);
+      grid.appendChild(card);
+    });
+
+    inventoryContainer.appendChild(grid);
+
   } catch (error) {
     console.error("Error loading Xûr inventory:", error);
-    container.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
+    document.getElementById("xur-inventory").innerHTML =
+      "<p>Error loading Xûr's inventory.</p>";
   }
 }
 
