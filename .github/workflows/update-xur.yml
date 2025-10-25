@@ -2,7 +2,11 @@ name: Update Xur Inventory
 
 on:
   schedule:
-    - cron: '0 * * * 5-2'  # Every hour from Friday through Tuesday
+    - cron: '0 * * * 5'  # Every hour on Friday
+    - cron: '0 * * * 6'  # Every hour on Saturday
+    - cron: '0 * * * 0'  # Every hour on Sunday
+    - cron: '0 * * * 1'  # Every hour on Monday
+    - cron: '0 * * * 2'  # Every hour on Tuesday
   workflow_dispatch:
 
 jobs:
@@ -18,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -32,15 +36,15 @@ jobs:
       - name: Fetch item definitions
         run: node src/fetch_definitions.js
 
-      - name: Prepare deployment files
+      - name: Commit and push changes
         run: |
-          mkdir -p public/data
-          cp -r data/*.json public/ || echo "No data files to copy"
-          echo "Deployment files ready."
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./public
+          mkdir -p data
+          git config user.name "xur-bot"
+          git config user.email "xur-bot@users.noreply.github.com"
+          git add data/xur_inventory.json data/xur_inventory_enriched.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update Xur inventory and definitions"
+            git push
+          fi
