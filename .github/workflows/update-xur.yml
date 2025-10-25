@@ -1,9 +1,11 @@
-name: Update Xur Inventory
-
 on:
   schedule:
-    # Runs every hour Friday–Tuesday (while Xûr is active)
-    - cron: "0 * * * 5-2"
+    # Every hour on Friday (5), Saturday (6), Sunday (0), Monday (1), and Tuesday (2)
+    - cron: "0 * * * 5"
+    - cron: "0 * * * 6"
+    - cron: "0 * * * 0"
+    - cron: "0 * * * 1"
+    - cron: "0 * * * 2"
   workflow_dispatch:
 
 permissions:
