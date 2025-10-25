@@ -5,9 +5,26 @@ import fetch from "node-fetch";
 const API_KEY = process.env.BUNGIE_API_KEY;
 const BASE_URL = "https://www.bungie.net/Platform/Destiny2";
 const XUR_VENDOR = 2190858386;
-const STRANGE_GEAR_OFFERS = 3910216754;
-const MORE_STRANGE_OFFERS = 4248210736;
 const OUT_PATH = path.join("data", "xur_inventory.json");
+
+// from last debug output
+const POSSIBLE_NESTED = [
+  4248210736, // More Strange Offers
+  3910216754,
+  2978337238,
+  1980618587,
+  1803434835,
+  2024015888,
+  702981643,
+  3666112472,
+  3820147479,
+  1828251441,
+  1420473289,
+  569260333,
+  4234468055,
+  1871764335,
+  3109687656
+];
 
 async function bungieGet(endpoint) {
   const url = `${BASE_URL}${endpoint}`;
@@ -19,26 +36,32 @@ async function bungieGet(endpoint) {
 }
 
 async function fetchVendorItems(vendorHash) {
-  const vendor = await bungieGet(`/Vendors/${vendorHash}/?components=402,400,302`);
-  const sales = vendor.sales?.data ? Object.values(vendor.sales.data) : [];
-  const items = [];
-  for (const s of sales) {
-    const def = await bungieGet(`/Manifest/DestinyInventoryItemDefinition/${s.itemHash}/`);
-    items.push({
-      itemHash: s.itemHash,
-      name: def.displayProperties?.name || "Unknown",
-      icon: `https://www.bungie.net${def.displayProperties?.icon || ""}`,
-      tier: def.inventory?.tierTypeName || "",
-      type: def.itemTypeDisplayName || def.itemTypeAndTierDisplayName || "",
-      category: computeCategory(def)
-    });
-    await new Promise(r => setTimeout(r, 200));
+  try {
+    const vendor = await bungieGet(`/Vendors/${vendorHash}/?components=402,400,302`);
+    const sales = vendor.sales?.data ? Object.values(vendor.sales.data) : [];
+    const items = [];
+    for (const s of sales) {
+      const def = await bungieGet(`/Manifest/DestinyInventoryItemDefinition/${s.itemHash}/`);
+      items.push({
+        itemHash: s.itemHash,
+        name: def.displayProperties?.name || "Unknown",
+        icon: `https://www.bungie.net${def.displayProperties?.icon || ""}`,
+        tier: def.inventory?.tierTypeName || "",
+        type: def.itemTypeDisplayName || def.itemTypeAndTierDisplayName || "",
+        category: computeCategory(def)
+      });
+      await new Promise(r => setTimeout(r, 200));
+    }
+    console.log(`✓ Vendor ${vendorHash} returned ${items.length} items`);
+    return items;
+  } catch (err) {
+    console.warn(`✗ Skipping vendor ${vendorHash}: ${err.message}`);
+    return [];
   }
-  return items;
 }
 
 async function main() {
-  console.log("Fetching Xur + sub vendors…");
+  console.log("Fetching Xur + nested vendors…");
 
   const topVendor = await bungieGet(`/Vendors/?components=402,400,302`);
   const xur = topVendor.sales.data[XUR_VENDOR];
@@ -59,10 +82,13 @@ async function main() {
     await new Promise(r => setTimeout(r, 200));
   }
 
-  const strangeGear = await fetchVendorItems(STRANGE_GEAR_OFFERS);
-  const moreStrange = await fetchVendorItems(MORE_STRANGE_OFFERS);
+  const nestedItems = [];
+  for (const hash of POSSIBLE_NESTED) {
+    const items = await fetchVendorItems(hash);
+    nestedItems.push(...items);
+  }
 
-  const allItems = [...topItems, ...strangeGear, ...moreStrange];
+  const allItems = [...topItems, ...nestedItems];
 
   const sortOrder = [
     "Multivarious Strange Offers",
@@ -86,7 +112,7 @@ async function main() {
   const output = {
     vendorHash: XUR_VENDOR,
     generatedAt: new Date().toISOString(),
-    source: "Destiny2.GetPublicVendors + Manifest + Nested Vendors",
+    validNestedVendors: POSSIBLE_NESTED,
     categories: categorized
   };
 
