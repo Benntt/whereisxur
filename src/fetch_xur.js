@@ -77,6 +77,16 @@ function computeCategory(def) {
   return "Multivarious Strange Offers";
 }
 
+const sortOrder = [
+  "Multivarious Strange Offers",
+  "Exotic Gear",
+  "Legendary Weapons",
+  "Legendary Armor",
+  "Loyalty Program of the Nine",
+  "Strange Material Offers",
+  "Strange Repeatable Offers"
+];
+
 
 function toSafeFilename(s) {
   return s
