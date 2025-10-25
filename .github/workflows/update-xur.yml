@@ -2,7 +2,7 @@ name: Update Xur Inventory
 
 on:
   schedule:
-    - cron: '0 * * * 5-2'  # Every hour from Friday to Tuesday
+    - cron: '0 * * * 5-2'  # Every hour from Friday through Tuesday
   workflow_dispatch:
 
 jobs:
@@ -32,23 +32,15 @@ jobs:
       - name: Fetch item definitions
         run: node src/fetch_definitions.js
 
-      - name: Commit and push changes
+      - name: Prepare deployment files
         run: |
-          mkdir -p data
-          git config user.name "xur-bot"
-          git config user.email "xur-bot@users.noreply.github.com"
-          git add data/xur_inventory.json data/xur_inventory_enriched.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Update Xur inventory and definitions"
-            git push
-          fi
+          mkdir -p public/data
+          cp -r data/*.json public/ || echo "No data files to copy"
+          echo "Deployment files ready."
 
-      # --- Auto Deploy to GitHub Pages ---
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: main
-          publish_dir: .
+          publish_branch: gh-pages
+          publish_dir: ./public
