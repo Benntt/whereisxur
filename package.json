@@ -1,14 +1,13 @@
 {
-  "name": "xur",
+  "name": "whereisxur-updater",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Automated Bungie API fetcher for Xur inventory",
+  "main": "src/fetch_xur.js",
   "type": "module",
   "scripts": {
+    "build": "node src/fetch_xur.js",
     "get-refresh-token": "node src/get_refresh_token.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "node-fetch": "^3.3.2"
   }
