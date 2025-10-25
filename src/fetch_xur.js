@@ -37,44 +37,48 @@ async function bungieGet(path, token) {
   return json.Response;
 }
 
-async function fetchVendorRecursive(token, membershipType, membershipId, characterId, vendorHash, visited = new Set()) {
-  if (visited.has(vendorHash)) return {};
-  visited.add(vendorHash);
-
-  const data = await bungieGet(`/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}/Vendors/${vendorHash}/?components=400,401,402`, token);
-  const saleItems = data.sales?.data || {};
-  const inventory = {};
-
-  for (const key of Object.keys(saleItems)) {
-    const item = saleItems[key];
-    inventory[key] = item;
-  }
-
-  const nested = data.itemComponents?.sales?.data || {};
-  for (const key of Object.keys(nested)) {
-    const vendorData = nested[key];
-    if (vendorData.vendorHash && !visited.has(vendorData.vendorHash)) {
-      const nestedInv = await fetchVendorRecursive(token, membershipType, membershipId, characterId, vendorData.vendorHash, visited);
-      Object.assign(inventory, nestedInv);
-    }
-  }
-
-  return inventory;
-}
-
 async function main() {
   const token = await refreshAccessToken();
-
   const membershipType = 3;
   const membershipId = "4611686018467457059";
   const characterId = "2305843009299618089";
+  const xurVendorHash = 2190858386;
 
-  console.log("Fetching Xûr and nested vendors…");
-  const xurHash = 2190858386;
-  const inventory = await fetchVendorRecursive(token, membershipType, membershipId, characterId, xurHash);
+  console.log("Fetching full Xûr inventory via VendorGroups...");
+
+  const data = await bungieGet(
+    `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}/Vendors/?components=400,401,402,302`,
+    token
+  );
+
+  const vendors = data.vendors?.data || {};
+  const saleItems = data.sales?.data || {};
+
+  // include nested vendor groups
+  const groups = data.vendorGroups?.data?.groups || [];
+
+  const inventory = {};
+
+  for (const [key, sale] of Object.entries(saleItems)) {
+    inventory[key] = sale;
+  }
+
+  // flatten all vendor items inside vendorGroups
+  for (const g of groups) {
+    if (g.vendorHashes && g.vendorHashes.length) {
+      for (const vHash of g.vendorHashes) {
+        const vendorSales = Object.entries(saleItems).filter(
+          ([, s]) => s.vendorHash === vHash
+        );
+        for (const [k, v] of vendorSales) {
+          inventory[k] = v;
+        }
+      }
+    }
+  }
 
   const output = {
-    vendorHash: xurHash,
+    vendorHash: xurVendorHash,
     generatedAt: new Date().toISOString(),
     categories: inventory,
   };
