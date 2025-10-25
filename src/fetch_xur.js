@@ -15,7 +15,7 @@ const HEADERS = { "X-API-Key": API_KEY };
 const BUNGIE = "https://www.bungie.net/Platform";
 const CDN = "https://www.bungie.net";
 const XUR_VENDOR_HASH = 2190858386;
-const OUT_PATH = path.join("data", "xur_inventory.json");
+const OUT_PATH = path.join("public", "data", "xur_inventory.json");
 
 // Minimal delay to respect rate limits; keeps things polite.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -46,33 +46,37 @@ async function getItemDef(itemHash) {
 
 // Simple categorizer; tune as you like later
 function computeCategory(def) {
-  const tier = def?.inventory?.tierTypeName || "";
-  const type = def?.itemTypeDisplayName || def?.itemTypeAndTierDisplayName || "";
-  const name = def?.displayProperties?.name || "";
+  const tier = def?.inventory?.tierTypeName?.toLowerCase() || "";
+  const type = def?.itemTypeDisplayName?.toLowerCase() || def?.itemTypeAndTierDisplayName?.toLowerCase() || "";
+  const name = def?.displayProperties?.name?.toLowerCase() || "";
 
-  // Catalysts usually have "Catalyst" in type or name
-  if (/catalyst/i.test(type) || /catalyst/i.test(name)) return "Catalysts";
+  // Exotic class items and catalysts
+  if (/(relativism|solipsism|stoicism)/i.test(name)) return "Multivarious Strange Offers";
+  if (/catalyst/i.test(type) || /catalyst/i.test(name)) return "Multivarious Strange Offers";
 
-  // Class items; exotics often map to class item display names
-  if (/class item/i.test(type)) return "Exotic Class Items";
+  // Exotic Engram, Exotic Weapons, and Armor
+  if (/exotic/i.test(tier) && /weapon/i.test(type)) return "Exotic Gear";
+  if (/exotic/i.test(tier) && /armor/i.test(type)) return "Exotic Gear";
+  if (/exotic/i.test(tier) && /engram/i.test(type)) return "Exotic Gear";
 
-  // Armor vs weapon buckets
-  if (/weapon/i.test(type)) {
-    if (/exotic/i.test(tier)) return "Exotic Weapons";
-    if (/legendary/i.test(tier)) return "Legendary Weapons";
-    return "Other Weapons";
-  }
-  if (/armor/i.test(type)) {
-    if (/exotic/i.test(tier)) return "Exotic Armor";
-    if (/legendary/i.test(tier)) return "Legendary Armor";
-    return "Other Armor";
-  }
+  // Legendary weapons and armor
+  if (/legendary/i.test(tier) && /weapon/i.test(type)) return "Legendary Weapons";
+  if (/legendary/i.test(tier) && /armor/i.test(type)) return "Legendary Armor";
 
-  // Coins, shards, etc.
-  if (/material|currency|consumable/i.test(type)) return "Strange Material Offers";
+  // Loyalty Program / Reset Rank
+  if (/loyalty/i.test(name) || /reset rank/i.test(name)) return "Loyalty Program of the Nine";
 
-  return tier || "Other";
+  // Materials and consumables
+  if (/material|currency|shard|core|prism|consumable|upgrade/i.test(type) || /ascendant/i.test(name))
+    return "Strange Material Offers";
+
+  // Repeatable items or bounties
+  if (/repeatable|bounty/i.test(name)) return "Strange Repeatable Offers";
+
+  // Default fallback
+  return "Multivarious Strange Offers";
 }
+
 
 function toSafeFilename(s) {
   return s
