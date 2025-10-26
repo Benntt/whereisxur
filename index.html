@@ -32,56 +32,48 @@
   </div>
 
   <script>
-    async function load() {
-      const res = await fetch("./data/xur_inventory_filtered.json", { cache: "no-cache" });
-      
-      if (!res.ok) {
-        document.getElementById("main").textContent = "Inventory not available.";
-        return;
-      }
-      const data = await res.json();
-      const main = document.getElementById("main");
-      document.getElementById("stamp").textContent = `Updated: ${new Date(data.generatedAt).toLocaleString()}`;
+async function load() {
+  const container = document.getElementById("xur-inventory");
+  container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
 
-      for (const [category, items] of Object.entries(data.categories)) {
-        const h = document.createElement("h2");
-        h.textContent = category;
-        main.appendChild(h);
+  try {
+    const res = await fetch("./data/xur_inventory_filtered.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error("Failed to load inventory");
 
-        const grid = document.createElement("div");
-        grid.className = "grid";
+    const data = await res.json();
 
-        for (const it of items) {
-          const card = document.createElement("div");
-          card.className = "card";
-
-          const img = document.createElement("img");
-          img.src = it.icon || "";
-          img.alt = it.name;
-
-          const meta = document.createElement("div");
-          meta.className = "meta";
-
-          const name = document.createElement("div");
-          name.className = "name";
-          name.textContent = it.name;
-
-          const sub = document.createElement("div");
-          sub.className = "sub";
-          sub.textContent = [it.tier, it.type].filter(Boolean).join(" • ");
-
-          meta.appendChild(name);
-          meta.appendChild(sub);
-
-          card.appendChild(img);
-          card.appendChild(meta);
-          grid.appendChild(card);
-        }
-
-        main.appendChild(grid);
-      }
+    // Your filtered JSON is a flat array, not categories
+    if (!Array.isArray(data)) {
+      container.innerHTML = "<p>No valid Xûr inventory found.</p>";
+      return;
     }
-    load();
-  </script>
-</body>
-</html>
+
+    container.innerHTML = "";
+    const grid = document.createElement("div");
+    grid.classList.add("inventory-grid");
+
+    data.forEach((item) => {
+      const card = document.createElement("div");
+      card.classList.add("item-card");
+
+      const img = document.createElement("img");
+      img.src = item.icon || "https://www.bungie.net/img/theme/destiny/icons/icon_d2.png";
+      img.alt = item.name || "Unknown Item";
+
+      const name = document.createElement("h3");
+      name.textContent = item.name || "Unknown Item";
+
+      card.appendChild(img);
+      card.appendChild(name);
+      grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", load);
+</script>
