@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Celestial Nighthawk",
+    "type": "Armor (hunter)"
+  },
+  {
+    "name": "Lucky Raspberry",
+    "type": "Armor (hunter)"
+  },
+  {
+    "name": "Relativism (Hunter Class Item)",
+    "type": "Armor (hunter)"
+  },
+  {
+    "name": "Synthoceps",
+    "type": "Armor (titan)"
+  },
+  {
+    "name": "One-Eyed Mask",
+    "type": "Armor (titan)"
+  },
+  {
+    "name": "Stoicism (Titan Class Item)",
+    "type": "Armor (titan)"
+  },
+  {
+    "name": "Lunafaction Boots",
+    "type": "Armor (warlock)"
+  },
+  {
+    "name": "Transversive Steps",
+    "type": "Armor (warlock)"
+  },
+  {
+    "name": "Solipsism (Warlock Class Item)",
+    "type": "Armor (warlock)"
+  },
+  {
+    "name": "Graviton Lance Catalyst",
+    "type": "Catalyst"
+  },
+  {
+    "name": "Tractor Cannon Catalyst",
+    "type": "Catalyst"
+  }
+]
