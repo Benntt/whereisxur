@@ -1,71 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Where Is Xûr?</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="page-frame">
-    <div class="column"></div>
+  <div class="page">
+    <header class="top">
+      <h1>Where Is Xûr?</h1>
+      <p id="status" class="status">Loading…</p>
+    </header>
 
-    <div class="center-col">
-      <main class="main-content">
-        <h2>Where Is Xûr?</h2>
-        <div id="xur-inventory">
-          <p>Loading Xûr’s inventory...</p>
-        </div>
-      </main>
-    </div>
+    <section id="location" class="location"></section>
 
-    <div class="column"></div>
+    <main id="inventory" class="grid" aria-busy="true"></main>
+
+    <footer class="foot">
+      <small>Updated live from Bungie. Not affiliated with Bungie.</small>
+    </footer>
   </div>
-
-  <script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    const container = document.getElementById("xur-inventory");
-    if (!container) return;
-
-    container.innerHTML = "<p>Loading Xûr’s inventory...</p>";
-
-    try {
-      const res = await fetch("./data/xur_inventory_filtered.json", { cache: "no-cache" });
-      if (!res.ok) throw new Error("Failed to load inventory");
-
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        container.innerHTML = "<p>No valid Xûr inventory found.</p>";
-        return;
-      }
-
-      container.innerHTML = "";
-      const grid = document.createElement("div");
-      grid.classList.add("inventory-grid");
-
-      data.forEach((item) => {
-        const card = document.createElement("div");
-        card.classList.add("item-card");
-
-        const img = document.createElement("img");
-        img.src = item.icon || "https://www.bungie.net/img/theme/destiny/icons/icon_d2.png";
-        img.alt = item.name || "Unknown Item";
-
-        const name = document.createElement("h3");
-        name.textContent = item.name || "Unknown Item";
-
-        card.appendChild(img);
-        card.appendChild(name);
-        grid.appendChild(card);
-      });
-
-      container.appendChild(grid);
-    } catch (err) {
-      console.error("Error loading Xûr’s inventory:", err);
-      container.innerHTML = "<p>Error loading Xûr’s inventory.</p>";
-    }
-  });
-  </script>
+  <script src="app.js" type="module"></script>
 </body>
 </html>
