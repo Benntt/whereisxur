@@ -1,43 +1,38 @@
-name: Update Xur Inventory
+name: Update Xûr Inventory
 
 on:
-  workflow_dispatch: {}
   schedule:
-    # Run hourly from Friday through Tuesday
-    - cron: "5 * * * *"
+    - cron: "5 9 * * FRI"  # Every Friday at 09:05 UTC
+  workflow_dispatch:        # Allow manual runs
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm install
 
-      - name: Build JSON
+      - name: Fetch live Xûr inventory
         env:
           BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
-        run: npm run build
+          BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
+          BUNGIE_CLIENT_SECRET: ${{ secrets.BUNGIE_CLIENT_SECRET }}
+          BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
+        run: node src/fetch_xur.js
 
-      - name: Commit JSON
+      - name: Enrich and filter data
+        env:
+          BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
         run: |
-          mkdir -p public/data
-          git config user.name "xur-bot"
-          git config user.email "xur-bot@users.noreply.github.com"
-          git add public/data/xur_inventory.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Update xur_inventory.json"
-            git push
-          fi
+          node src/fetch_definitio_
