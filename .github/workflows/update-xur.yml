@@ -31,10 +31,13 @@ jobs:
           BUNGIE_REFRESH_TOKEN: ${{ secrets.BUNGIE_REFRESH_TOKEN }}
         run: node src/fetch_xur.js
 
-                  - name: Filter inventory data
+              - name: Enrich and filter data
         env:
           BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
-        run: node scripts/filter_xur_inventory.js
+        run: |
+          node src/fetch_definitions.js
+          node scripts/filter_xur_inventory.js
+
 
 
       - name: Commit and push results
