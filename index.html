@@ -33,7 +33,7 @@
 
   <script>
     async function load() {
-      const res = await fetch("./data/xur_inventory.json", { cache: "no-cache" });
+      const res = await fetch("./data/xur_inventory_filtered.json", { cache: "no-cache" });
       if (!res.ok) {
         document.getElementById("main").textContent = "Inventory not available.";
         return;
