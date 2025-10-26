@@ -1,0 +1,56 @@
+:root {
+  --bg: #0b0e12;
+  --panel: #12161d;
+  --muted: #aab3c0;
+  --text: #e9eef7;
+  --accent: #49b3ff;
+  --ring: rgba(73,179,255,.25);
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+
+.page { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+.top { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:10px; }
+h1 { margin:0; letter-spacing:.5px; }
+
+.status { margin:0; color:var(--muted); }
+.status--online { color:#58d68d; }
+.status--offline { color:#e67e22; }
+.status--error { color:#ff6b6b; }
+
+.location { margin: 8px 0 20px 0; }
+.location-card { background:var(--panel); border:1px solid #1f2530; border-radius:12px; padding:16px; }
+.location-card h2 { margin:0 0 4px; }
+.location-card p { margin:0; color:var(--muted); }
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+}
+@media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } }
+
+.item {
+  background:var(--panel);
+  border:1px solid #1f2530;
+  border-radius:16px;
+  padding:14px;
+  display:flex; gap:12px; align-items:center;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.item:hover { transform: translateY(-2px); border-color:#263043; box-shadow:0 0 0 6px var(--ring); }
+
+.item img.thumb { width:56px; height:56px; border-radius:8px; background:#0b0b0b; object-fit:cover; flex:0 0 56px; }
+
+.meta { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.meta h3 { margin:0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.meta .sub { color:var(--muted); font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.costs { margin:6px 0 0; padding:0; list-style:none; display:flex; gap:10px; flex-wrap:wrap; }
+.costs li { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:.9rem; }
+.costs li img { width:18px; height:18px; border-radius:4px; }
+
+.foot { margin-top:24px; color:var(--muted); text-align:center; }
