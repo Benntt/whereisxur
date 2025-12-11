@@ -1,1 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Xur Weekly Inventory Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: 22px;
+      margin: 24px 0 8px;
+    }
+    h3 {
+      font-size: 18px;
+      margin: 16px 0 8px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+      padding: 16px 20px;
+      margin-top: 18px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    select, input[type="text"], input[type="password"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      background: #ffffff;
+    }
+    select:disabled {
+      background: #e5e7eb;
+      cursor: not-allowed;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    .grid-3 {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .grid-5 {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .small {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #4f46e5;
+      color: #ffffff;
+    }
+    .btn-primary:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+    .grow {
+      flex: 1 1 220px;
+    }
+    .status {
+      font-size: 13px;
+      margin-left: 8px;
+    }
+    .status.ok {
+      color: #16a34a;
+    }
+    .status.err {
+      color: #b91c1c;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Xur Weekly Inventory Admin</h1>
+  <p class="small">
+    This page reads from <code>data/xurMasterInventory.json</code> and rewrites <code>data/xurCurrentInventory.json</code> in the GitHub repo.
+  </p>
+
+  <div class="card">
+    <div class="top-bar">
+      <div class="grow">
+        <label for="token">GitHub Personal Access Token (repo contents write)</label>
+        <input id="token" type="password" placeholder="ghp_..." autocomplete="off">
+        <p class="small">
+          Stored in this browser only using <code>localStorage</code>. Not sent anywhere except directly to GitHub.
+        </p>
+      </div>
+      <div>
+        <button id="loadBtn" class="btn-primary">Load Inventory</button>
+        <span id="loadStatus" class="status"></span>
+      </div>
+    </div>
+  </div>
+
+  <form id="xurForm" class="card" style="margin-top: 20px;">
+    <div class="section-header">
+      <h2>Exotic Armor</h2>
+      <p class="small">
+        Pick two armor pieces per class; exotic class items are always added:
+        <span class="pill">Hunter: Relativism</span>
+        <span class="pill">Titan: Stoicism</span>
+        <span class="pill">Warlock: Solipsism</span>
+      </p>
+    </div>
+
+    <div class="grid grid-3" style="margin-top: 12px;">
+      <div>
+        <h3>Hunter</h3>
+        <label for="hunterArmor1">Exotic 1</label>
+        <select id="hunterArmor1" name="hunterArmor1" disabled>
+          <option value="">None</option>
+        </select>
+
+        <label for="hunterArmor2" style="margin-top: 8px;">Exotic 2</label>
+        <select id="hunterArmor2" name="hunterArmor2" disabled>
+          <option value="">None</option>
+        </select>
+        <p class="small" style="margin-top: 6px;">Relativism cloak is always added as the third slot.</p>
+      </div>
+
+      <div>
+        <h3>Titan</h3>
+        <label for="titanArmor1">Exotic 1</label>
+        <select id="titanArmor1" name="titanArmor1" disabled>
+          <option value="">None</option>
+        </select>
+
+        <label for="titanArmor2" style="margin-top: 8px;">Exotic 2</label>
+        <select id="titanArmor2" name="titanArmor2" disabled>
+          <option value="">None</option>
+        </select>
+        <p class="small" style="margin-top: 6px;">Stoicism mark is always added as the third slot.</p>
+      </div>
+
+      <div>
+        <h3>Warlock</h3>
+        <label for="warlockArmor1">Exotic 1</label>
+        <select id="warlockArmor1" name="warlockArmor1" disabled>
+          <option value="">None</option>
+        </select>
+
+        <label for="warlockArmor2" style="margin-top: 8px;">Exotic 2</label>
+        <select id="warlockArmor2" name="warlockArmor2" disabled>
+          <option value="">None</option>
+        </select>
+        <p class="small" style="margin-top: 6px;">Solipsism bond is always added as the third slot.</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 28px;">Exotic Weapons</h2>
+    <p class="small">Pick up to 5 weapons.</p>
+    <div class="grid grid-5" style="margin-top: 10px;">
+      <div>
+        <label for="weapon1">Weapon 1</label>
+        <select id="weapon1" name="weapon1" disabled><option value="">None</option></select>
+      </div>
+      <div>
+        <label for="weapon2">Weapon 2</label>
+        <select id="weapon2" name="weapon2" disabled><option value="">None</option></select>
+      </div>
+      <div>
+        <label for="weapon3">Weapon 3</label>
+        <select id="weapon3" name="weapon3" disabled><option value="">None</option></select>
+      </div>
+      <div>
+        <label for="weapon4">Weapon 4</label>
+        <select id="weapon4" name="weapon4" disabled><option value="">None</option></select>
+      </div>
+      <div>
+        <label for="weapon5">Weapon 5</label>
+        <select id="weapon5" name="weapon5" disabled><option value="">None</option></select>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 28px;">Exotic Catalysts</h2>
+    <p class="small">Pick up to 2 catalysts.</p>
+    <div class="grid grid-2" style="margin-top: 10px;">
+      <div>
+        <label for="catalyst1">Catalyst 1</label>
+        <select id="catalyst1" name="catalyst1" disabled><option value="">None</option></select>
+      </div>
+      <div>
+        <label for="catalyst2">Catalyst 2</label>
+        <select id="catalyst2" name="catalyst2" disabled><option value="">None</option></select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top: 24px;">
+      <p class="small">
+        On save, this will commit to <code>data/xurCurrentInventory.json</code> on the configured branch.
+      </p>
+      <div>
+        <button type="submit" id="saveBtn" class="btn-primary" disabled>Save Weekly Inventory</button>
+        <span id="saveStatus" class="status"></span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Adjust these for your repo
+  const GITHUB_OWNER = "YOUR_GITHUB_USERNAME_OR_ORG";
+  const GITHUB_REPO = "YOUR_REPO_NAME";
+  const GITHUB_BRANCH = "main";
+  const MASTER_PATH = "data/xurMasterInventory.json";
+  const CURRENT_PATH = "data/xurCurrentInventory.json";
+
+  const CLASS_ITEMS = {
+    hunter: "relativism",
+    titan: "stoicism",
+    warlock: "solipsism"
+  };
+
+  const tokenInput = document.getElementById("token");
+  const loadBtn = document.getElementById("loadBtn");
+  const loadStatus = document.getElementById("loadStatus");
+  const saveBtn = document.getElementById("saveBtn");
+  const saveStatus = document.getElementById("saveStatus");
+  const form = document.getElementById("xurForm");
+
+  const armorSelectIds = [
+    "hunterArmor1", "hunterArmor2",
+    "titanArmor1", "titanArmor2",
+    "warlockArmor1", "warlockArmor2"
+  ];
+  const weaponSelectIds = ["weapon1", "weapon2", "weapon3", "weapon4", "weapon5"];
+  const catalystSelectIds = ["catalyst1", "catalyst2"];
+
+  let masterData = null;
+  let currentData = null;
+
+  // Load token from localStorage if present
+  (function initToken() {
+    const stored = window.localStorage.getItem("xur_admin_token");
+    if (stored) {
+      tokenInput.value = stored;
+    }
+  })();
+
+  tokenInput.addEventListener("change", () => {
+    const val = tokenInput.value.trim();
+    if (val) {
+      window.localStorage.setItem("xur_admin_token", val);
+    } else {
+      window.localStorage.removeItem("xur_admin_token");
+    }
+  });
+
+  loadBtn.addEventListener("click", async () => {
+    loadStatus.textContent = "";
+    saveStatus.textContent = "";
+    const token = tokenInput.value.trim();
+    if (!token) {
+      loadStatus.textContent = "Token required.";
+      loadStatus.className = "status err";
+      return;
+    }
+
+    loadBtn.disabled = true;
+    loadStatus.textContent = "Loading...";
+    loadStatus.className = "status";
+
+    try {
+      // Fetch master file (can use raw URL, but GitHub API keeps it consistent)
+      const masterUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${MASTER_PATH}`;
+      const currentUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CURRENT_PATH}`;
+
+      const [masterRes, currentRes] = await Promise.all([
+        fetch(masterUrl),
+        fetch(currentUrl)
+      ]);
+
+      if (!masterRes.ok) {
+        throw new Error("Failed to load xurMasterInventory.json");
+      }
+      masterData = await masterRes.json();
+
+      if (currentRes.ok) {
+        currentData = await currentRes.json();
+      } else {
+        currentData = {
+          exoticArmor: { hunter: [], titan: [], warlock: [] },
+          exoticWeapons: [],
+          exoticCatalysts: []
+        };
+      }
+
+      populateForm(masterData, currentD
 
