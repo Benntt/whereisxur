@@ -345,5 +345,266 @@
         };
       }
 
-      populateForm(masterData, currentD
+      populateForm(masterData, currentData);
+      enableForm();
 
+      loadStatus.textContent = "Loaded.";
+      loadStatus.className = "status ok";
+    } catch (err) {
+      console.error(err);
+      loadStatus.textContent = "Error loading data.";
+      loadStatus.className = "status err";
+    } finally {
+      loadBtn.disabled = false;
+    }
+  });
+
+  function enableForm() {
+    [...armorSelectIds, ...weaponSelectIds, ...catalystSelectIds].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = false;
+    });
+    saveBtn.disabled = false;
+  }
+
+  function createOptions(select, items, selectedId) {
+    select.innerHTML = "";
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "None";
+    select.appendChild(emptyOpt);
+
+    items.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = item.name;
+      if (item.id === selectedId) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+  }
+
+  function populateForm(master, current) {
+    const hunterArmor = master.exoticArmor.hunter.filter(i => !i.isClassItem);
+    const titanArmor = master.exoticArmor.titan.filter(i => !i.isClassItem);
+    const warlockArmor = master.exoticArmor.warlock.filter(i => !i.isClassItem);
+
+    const currentHunterNonClass = (current.exoticArmor.hunter || []).filter(i => !i.isClassItem);
+    const currentTitanNonClass = (current.exoticArmor.titan || []).filter(i => !i.isClassItem);
+    const currentWarlockNonClass = (current.exoticArmor.warlock || []).filter(i => !i.isClassItem);
+
+    createOptions(
+      document.getElementById("hunterArmor1"),
+      hunterArmor,
+      currentHunterNonClass[0] ? currentHunterNonClass[0].id : ""
+    );
+    createOptions(
+      document.getElementById("hunterArmor2"),
+      hunterArmor,
+      currentHunterNonClass[1] ? currentHunterNonClass[1].id : ""
+    );
+
+    createOptions(
+      document.getElementById("titanArmor1"),
+      titanArmor,
+      currentTitanNonClass[0] ? currentTitanNonClass[0].id : ""
+    );
+    createOptions(
+      document.getElementById("titanArmor2"),
+      titanArmor,
+      currentTitanNonClass[1] ? currentTitanNonClass[1].id : ""
+    );
+
+    createOptions(
+      document.getElementById("warlockArmor1"),
+      warlockArmor,
+      currentWarlockNonClass[0] ? currentWarlockNonClass[0].id : ""
+    );
+    createOptions(
+      document.getElementById("warlockArmor2"),
+      warlockArmor,
+      currentWarlockNonClass[1] ? currentWarlockNonClass[1].id : ""
+    );
+
+    const currentWeaponIds = (current.exoticWeapons || []).map(i => i.id);
+    weaponSelectIds.forEach((id, idx) => {
+      createOptions(
+        document.getElementById(id),
+        master.exoticWeapons,
+        currentWeaponIds[idx] || ""
+      );
+    });
+
+    const currentCatalystIds = (current.exoticCatalysts || []).map(i => i.id);
+    catalystSelectIds.forEach((id, idx) => {
+      createOptions(
+        document.getElementById(id),
+        master.exoticCatalysts,
+        currentCatalystIds[idx] || ""
+      );
+    });
+  }
+
+  function findItemById(master, id) {
+    if (!id) return null;
+    const pools = [
+      master.exoticArmor.hunter,
+      master.exoticArmor.titan,
+      master.exoticArmor.warlock,
+      master.exoticWeapons,
+      master.exoticCatalysts
+    ];
+    for (const pool of pools) {
+      const found = pool.find(i => i.id === id);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function buildArmorArray(master, pick1, pick2, classItemId) {
+    const result = [];
+    const a = findItemById(master, pick1);
+    const b = findItemById(master, pick2);
+    const c = findItemById(master, classItemId);
+
+    if (a) result.push(a);
+    if (b && (!a || b.id !== a.id)) result.push(b);
+    if (c) result.push(c);
+
+    return result.slice(0, 3);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    saveStatus.textContent = "";
+    const token = tokenInput.value.trim();
+    if (!token) {
+      saveStatus.textContent = "Token required.";
+      saveStatus.className = "status err";
+      return;
+    }
+    if (!masterData) {
+      saveStatus.textContent = "Load data first.";
+      saveStatus.className = "status err";
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveStatus.textContent = "Saving...";
+    saveStatus.className = "status";
+
+    try {
+      const exoticArmor = {
+        hunter: buildArmorArray(
+          masterData,
+          document.getElementById("hunterArmor1").value || null,
+          document.getElementById("hunterArmor2").value || null,
+          CLASS_ITEMS.hunter
+        ),
+        titan: buildArmorArray(
+          masterData,
+          document.getElementById("titanArmor1").value || null,
+          document.getElementById("titanArmor2").value || null,
+          CLASS_ITEMS.titan
+        ),
+        warlock: buildArmorArray(
+          masterData,
+          document.getElementById("warlockArmor1").value || null,
+          document.getElementById("warlockArmor2").value || null,
+          CLASS_ITEMS.warlock
+        )
+      };
+
+      const weaponIds = weaponSelectIds
+        .map(id => document.getElementById(id).value || null)
+        .filter(Boolean);
+
+      const exoticWeapons = [];
+      weaponIds.forEach(id => {
+        const item = findItemById(masterData, id);
+        if (item && !exoticWeapons.find(w => w.id === item.id)) {
+          exoticWeapons.push(item);
+        }
+      });
+
+      const catalystIds = catalystSelectIds
+        .map(id => document.getElementById(id).value || null)
+        .filter(Boolean);
+
+      const exoticCatalysts = [];
+      catalystIds.forEach(id => {
+        const item = findItemById(masterData, id);
+        if (item && !exoticCatalysts.find(c => c.id === item.id)) {
+          exoticCatalysts.push(item);
+        }
+      });
+
+      const newCurrent = {
+        exoticArmor,
+        exoticWeapons,
+        exoticCatalysts
+      };
+
+      await saveToGitHub(token, newCurrent);
+
+      saveStatus.textContent = "Saved.";
+      saveStatus.className = "status ok";
+    } catch (err) {
+      console.error(err);
+      saveStatus.textContent = "Error saving.";
+      saveStatus.className = "status err";
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  async function saveToGitHub(token, dataObj) {
+    const apiBase = "https://api.github.com";
+    const path = encodeURIComponent(CURRENT_PATH);
+    const getUrl = `${apiBase}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(GITHUB_BRANCH)}`;
+
+    const getRes = await fetch(getUrl, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json"
+      }
+    });
+
+    if (!getRes.ok) {
+      throw new Error("Failed to fetch current file info.");
+    }
+
+    const fileInfo = await getRes.json();
+    const sha = fileInfo.sha;
+
+    const contentString = JSON.stringify(dataObj, null, 2);
+    const encodedContent = btoa(unescape(encodeURIComponent(contentString)));
+
+    const putUrl = `${apiBase}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+    const body = {
+      message: "Update Xur weekly inventory",
+      content: encodedContent,
+      sha: sha,
+      branch: GITHUB_BRANCH
+    };
+
+    const putRes = await fetch(putUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!putRes.ok) {
+      const text = await putRes.text();
+      console.error("GitHub PUT error:", putRes.status, text);
+      throw new Error("GitHub commit failed.");
+    }
+  }
+</script>
+</body>
+</html>
