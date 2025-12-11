@@ -1,0 +1,140 @@
+{
+  "exoticArmor": {
+    "hunter": [
+      {
+        "id": "shards-of-galanor",
+        "name": "Shards of Galanor",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Hunter",
+        "icon": "/img/xur/shards-of-galanor.png"
+      },
+      {
+        "id": "renewal-grasps",
+        "name": "Renewal Grasps",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Hunter",
+        "icon": "/img/xur/renewal-grasps.png"
+      },
+      {
+        "id": "relativism",
+        "name": "Relativism",
+        "slot": "Cloak",
+        "isClassItem": true,
+        "class": "Hunter",
+        "icon": "/img/xur/relativism.png"
+      }
+    ],
+    "titan": [
+      {
+        "id": "khepris-horn",
+        "name": "Khepri's Horn",
+        "slot": "Helmet",
+        "isClassItem": false,
+        "class": "Titan",
+        "icon": "/img/xur/khepris-horn.png"
+      },
+      {
+        "id": "point-contact-cannon-brace",
+        "name": "Point-Contact Cannon Brace",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Titan",
+        "icon": "/img/xur/point-contact-cannon-brace.png"
+      },
+      {
+        "id": "stoicism",
+        "name": "Stoicism",
+        "slot": "Mark",
+        "isClassItem": true,
+        "class": "Titan",
+        "icon": "/img/xur/stoicism.png"
+      }
+    ],
+    "warlock": [
+      {
+        "id": "veritys-brow",
+        "name": "Verity's Brow",
+        "slot": "Helmet",
+        "isClassItem": false,
+        "class": "Warlock",
+        "icon": "/img/xur/veritys-brow.png"
+      },
+      {
+        "id": "secant-filaments",
+        "name": "Secant Filaments",
+        "slot": "Legs",
+        "isClassItem": false,
+        "class": "Warlock",
+        "icon": "/img/xur/secant-filaments.png"
+      },
+      {
+        "id": "solipsism",
+        "name": "Solipsism",
+        "slot": "Bond",
+        "isClassItem": true,
+        "class": "Warlock",
+        "icon": "/img/xur/solipsism.png"
+      }
+    ]
+  },
+  "exoticWeapons": [
+    {
+      "id": "thunderlord",
+      "name": "Thunderlord",
+      "type": "Machine Gun",
+      "icon": "/img/xur/thunderlord.png"
+    },
+    {
+      "id": "hawkmoon",
+      "name": "Hawkmoon",
+      "type": "Hand Cannon",
+      "icon": "/img/xur/hawkmoon.png"
+    },
+    {
+      "id": "wardcliff-coil",
+      "name": "The Wardcliff Coil",
+      "type": "Rocket Launcher",
+      "icon": "/img/xur/wardcliff-coil.png"
+    },
+    {
+      "id": "sunshot",
+      "name": "Sunshot",
+      "type": "Hand Cannon",
+      "icon": "/img/xur/sunshot.png"
+    },
+    {
+      "id": "arbalest",
+      "name": "Arbalest",
+      "type": "Linear Fusion Rifle",
+      "icon": "/img/xur/arbalest.png"
+    },
+    {
+      "id": "coldheart",
+      "name": "Coldheart",
+      "type": "Trace Rifle",
+      "icon": "/img/xur/coldheart.png"
+    }
+  ],
+  "exoticCatalysts": [
+    {
+      "id": "thunderlord-catalyst",
+      "name": "Thunderlord Catalyst",
+      "weapon": "Thunderlord",
+      "icon": "/img/xur/thunderlord-catalyst.png"
+    },
+    {
+      "id": "sunshot-catalyst",
+      "name": "Sunshot Catalyst",
+      "weapon": "Sunshot",
+      "icon": "/img/xur/sunshot-catalyst.png"
+    },
+    {
+      "id": "arbalest-catalyst",
+      "name": "Arbalest Catalyst",
+      "weapon": "Arbalest",
+      "icon": "/img/xur/arbalest-catalyst.png"
+    }
+  ]
+}
