@@ -23,6 +23,7 @@
       --ok-border:#a7f3d0;
       --btn:#4f46e5;
       --btn-text:#ffffff;
+      --btn2:#0f172a;
     }
 
     *{box-sizing:border-box}
@@ -33,8 +34,10 @@
       color:var(--text);
     }
 
-    .wrap{max-width:1200px;margin:0 auto;padding:22px 18px 60px}
+    .wrap{max-width:1240px;margin:0 auto;padding:22px 18px 80px}
     h1{margin:0 0 6px;font-size:34px;letter-spacing:-.02em}
+    h2{margin:0 0 10px;font-size:22px;letter-spacing:-.01em}
+    h3{margin:18px 0 10px;font-size:16px}
 
     .sub{margin:0 0 18px;color:var(--muted);font-size:13px}
     .sub code{
@@ -70,7 +73,7 @@
       margin:0 0 6px;
     }
 
-    input[type="text"], input[type="password"], select{
+    input[type="text"], input[type="password"], select, textarea{
       width:100%;
       padding:10px 12px;
       border-radius:12px;
@@ -80,9 +83,18 @@
       background:#ffffff;
     }
 
+    textarea{
+      min-height:160px;
+      resize:vertical;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:12px;
+      color:#0f172a;
+    }
+
     .field{flex:1 1 260px; min-width:240px}
     .field.small{flex:0 0 220px}
     .field.tiny{flex:0 0 160px}
+    .field.full{flex:1 1 100%; min-width:100%}
 
     .btn{
       display:inline-flex;
@@ -98,6 +110,7 @@
       font-size:14px;
       user-select:none;
     }
+    .btn.secondary{background:var(--btn2)}
     .btn.ghost{
       background:#ffffff;
       color:#0f172a;
@@ -118,17 +131,19 @@
     .msg.ok{border-color:var(--ok-border); background:var(--ok-bg); color:var(--ok)}
     .msg.err{border-color:var(--danger-border); background:var(--danger-bg); color:var(--danger)}
 
-    h2{margin:0 0 10px;font-size:22px;letter-spacing:-.01em}
-    h3{margin:18px 0 10px;font-size:16px}
-
     .help{margin:8px 0 0;color:var(--muted);font-size:13px}
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:12px;
+      color:#334155;
+    }
 
     .pick-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:var(--gap);
     }
-    @media(max-width:820px){.pick-grid{grid-template-columns:1fr}}
+    @media(max-width:920px){.pick-grid{grid-template-columns:1fr}}
 
     .item-row{
       display:grid;
@@ -168,12 +183,6 @@
       color:var(--muted);
     }
 
-    .mono{
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-      color:#334155;
-    }
-
     .debug{
       margin-top:12px;
       padding:12px;
@@ -184,8 +193,19 @@
       font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
       font-size:12px;
       white-space:pre-wrap;
-      max-height:260px;
+      max-height:280px;
       overflow:auto;
+    }
+
+    .pill{
+      display:inline-block;
+      font-size:12px;
+      color:#334155;
+      background:#f1f5f9;
+      border:1px solid var(--border);
+      padding:2px 8px;
+      border-radius:999px;
+      margin-left:8px;
     }
   </style>
 </head>
@@ -226,6 +246,42 @@
       <div id="debug" class="debug" style="display:none"></div>
     </div>
 
+    <div id="catalogTools" class="card" style="display:none">
+      <h2>Catalog Tools <span id="catalogCount" class="pill"></span></h2>
+      <div class="help">
+        If dropdowns are empty, your catalog arrays are empty. Use this to import items in bulk, then save the catalog to GitHub.
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="field full">
+          <label for="importText">Bulk import JSON</label>
+          <textarea id="importText" placeholder='Paste JSON array here.
+Accepted formats:
+1) [{"name":"Hawkmoon","icon":"https://www.bungie.net/...png","target":"exoticGear.weapons"}]
+2) {"Hawkmoon":"https://www.bungie.net/...png","Thunderlord":"https://www.bungie.net/...png"} (maps to target selected below)
+'></textarea>
+          <div class="help">
+            Use <span class="mono">target</span> to place each item; or select a target below to apply to map imports.
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="importTarget">Default target for map imports</label>
+          <select id="importTarget"></select>
+        </div>
+
+        <div class="field small">
+          <button id="importBtn" class="btn secondary" type="button">Import Into Catalog</button>
+        </div>
+
+        <div class="field small">
+          <button id="saveCatalogBtn" class="btn" type="button">Save Catalog to GitHub</button>
+        </div>
+      </div>
+
+      <div id="catalogMsg" class="msg" style="display:none"></div>
+    </div>
+
     <div id="editor" class="card" style="display:none">
       <h2>Weekly Inventory</h2>
       <p class="help">
@@ -262,11 +318,11 @@
       <div id="loyaltyNine"></div>
 
       <h3>Strange Material Offers</h3>
-      <div class="help">Ascendant Shard, prisms, cores, and any other materials in catalog.</div>
+      <div class="help">Ascendant Shard, prisms, cores, and any other materials you include.</div>
       <div id="materials"></div>
 
       <h3>Strange Repeatable Offers</h3>
-      <div class="help">Repeatable bounty/currency items in catalog.</div>
+      <div class="help">Repeatable bounty/currency items you include.</div>
       <div id="repeatables"></div>
 
       <div class="row" style="margin-top:18px">
@@ -279,9 +335,12 @@
   </div>
 
   <script>
-    const PATH_CATALOG = "/whereisxur/data/xurCatalog.json";
-    const PATH_CURRENT = "/whereisxur/data/xurCurrentInventory.json";
-    const LS_TOKEN_KEY = "xur_admin_token_v2";
+    const REPO_SEGMENT = (location.pathname.split("/")[1] || "").trim();
+    const BASE = REPO_SEGMENT ? ("/" + REPO_SEGMENT) : "";
+    const PATH_CATALOG = BASE + "/data/xurCatalog.json";
+    const PATH_CURRENT = BASE + "/data/xurCurrentInventory.json";
+
+    const LS_TOKEN_KEY = "xur_admin_token_v3";
 
     const CLASS_ITEMS_LOCKED = {
       hunter: "Relativism",
@@ -297,6 +356,15 @@
       loadBtn: document.getElementById("loadBtn"),
       status: document.getElementById("status"),
       debug: document.getElementById("debug"),
+
+      catalogTools: document.getElementById("catalogTools"),
+      catalogCount: document.getElementById("catalogCount"),
+      importText: document.getElementById("importText"),
+      importTarget: document.getElementById("importTarget"),
+      importBtn: document.getElementById("importBtn"),
+      saveCatalogBtn: document.getElementById("saveCatalogBtn"),
+      catalogMsg: document.getElementById("catalogMsg"),
+
       editor: document.getElementById("editor"),
       saveBtn: document.getElementById("saveBtn"),
       exportBtn: document.getElementById("exportBtn"),
@@ -313,6 +381,19 @@
       repeatables: document.getElementById("repeatables")
     };
 
+    const TARGETS = [
+      "multivariousStrangeOffers.catalysts",
+      "multivariousStrangeOffers.exoticArmor",
+      "multivariousStrangeOffers.classItems",
+      "exoticGear.engram",
+      "exoticGear.weapons",
+      "legendaryWeapons",
+      "legendaryArmor",
+      "loyaltyProgramOfTheNine.resetRank",
+      "strangeMaterialOffers",
+      "strangeRepeatableOffers"
+    ];
+
     let catalog = null;
     let current = null;
 
@@ -327,19 +408,32 @@
       el.textContent = "";
     }
 
-    function debugOn() {
-      ui.debug.style.display = "";
-    }
+    function debugOn() { ui.debug.style.display = ""; }
 
     function logDebug(line) {
       debugOn();
-      ui.debug.textContent += line + "\\n";
+      ui.debug.textContent += line + "\n";
       ui.debug.scrollTop = ui.debug.scrollHeight;
     }
 
     function clearDebug() {
       ui.debug.style.display = "none";
       ui.debug.textContent = "";
+    }
+
+    function restoreTokenLocal() {
+      try {
+        const t = localStorage.getItem(LS_TOKEN_KEY);
+        if (t) ui.token.value = t;
+      } catch {}
+    }
+
+    function setTokenLocal(token) {
+      try { localStorage.setItem(LS_TOKEN_KEY, token); } catch {}
+    }
+
+    function getToken() {
+      return ui.token.value.trim();
     }
 
     function resolveIcon(icon) {
@@ -355,6 +449,40 @@
         if (!m.has(it.name)) m.set(it.name, it);
       }
       return Array.from(m.values()).sort((a,b) => a.name.localeCompare(b.name));
+    }
+
+    function ensureCatalogShape() {
+      if (!catalog || typeof catalog !== "object") catalog = {};
+
+      catalog.multivariousStrangeOffers = catalog.multivariousStrangeOffers || {};
+      catalog.multivariousStrangeOffers.catalysts = catalog.multivariousStrangeOffers.catalysts || [];
+      catalog.multivariousStrangeOffers.exoticArmor = catalog.multivariousStrangeOffers.exoticArmor || [];
+      catalog.multivariousStrangeOffers.classItems = catalog.multivariousStrangeOffers.classItems || [];
+
+      catalog.exoticGear = catalog.exoticGear || {};
+      catalog.exoticGear.engram = catalog.exoticGear.engram || [];
+      catalog.exoticGear.weapons = catalog.exoticGear.weapons || [];
+
+      catalog.legendaryWeapons = catalog.legendaryWeapons || [];
+      catalog.legendaryArmor = catalog.legendaryArmor || [];
+
+      catalog.loyaltyProgramOfTheNine = catalog.loyaltyProgramOfTheNine || {};
+      catalog.loyaltyProgramOfTheNine.resetRank = catalog.loyaltyProgramOfTheNine.resetRank || [];
+
+      catalog.strangeMaterialOffers = catalog.strangeMaterialOffers || [];
+      catalog.strangeRepeatableOffers = catalog.strangeRepeatableOffers || [];
+
+      const ensureLocked = (name) => {
+        if (!catalog.multivariousStrangeOffers.classItems.some(x => x && x.name === name)) {
+          catalog.multivariousStrangeOffers.classItems.push({ name, icon: "" });
+        }
+      };
+
+      ensureLocked(CLASS_ITEMS_LOCKED.hunter);
+      ensureLocked(CLASS_ITEMS_LOCKED.titan);
+      ensureLocked(CLASS_ITEMS_LOCKED.warlock);
+
+      catalog.multivariousStrangeOffers.classItems = uniqByName(catalog.multivariousStrangeOffers.classItems);
     }
 
     function ensureCurrentShape() {
@@ -394,9 +522,9 @@
     }
 
     function allCatalogItemsFlat() {
-      const mso = catalog?.multivariousStrangeOffers || {};
-      const exotic = catalog?.exoticGear || {};
-      const loyalty = catalog?.loyaltyProgramOfTheNine || {};
+      const mso = catalog.multivariousStrangeOffers || {};
+      const exotic = catalog.exoticGear || {};
+      const loyalty = catalog.loyaltyProgramOfTheNine || {};
 
       return []
         .concat(mso.catalysts || [])
@@ -404,11 +532,11 @@
         .concat(mso.exoticArmor || [])
         .concat(exotic.engram || [])
         .concat(exotic.weapons || [])
-        .concat(catalog?.legendaryWeapons || [])
-        .concat(catalog?.legendaryArmor || [])
+        .concat(catalog.legendaryWeapons || [])
+        .concat(catalog.legendaryArmor || [])
         .concat(loyalty.resetRank || [])
-        .concat(catalog?.strangeMaterialOffers || [])
-        .concat(catalog?.strangeRepeatableOffers || []);
+        .concat(catalog.strangeMaterialOffers || [])
+        .concat(catalog.strangeRepeatableOffers || []);
     }
 
     function getItemByName(name) {
@@ -423,7 +551,7 @@
 
       const head = document.createElement("div");
       head.style.fontWeight = "800";
-      head.textContent = title;
+      head.textContent = title + (options.length <= 1 ? " (catalog empty)" : "");
       wrap.appendChild(head);
 
       for (let i = 0; i < count; i++) {
@@ -510,22 +638,36 @@
 
         line.appendChild(thumb);
         line.appendChild(label);
-
         wrap.appendChild(line);
       }
 
       container.appendChild(wrap);
     }
 
+    function renderTargetSelect() {
+      ui.importTarget.innerHTML = "";
+      for (const t of TARGETS) {
+        const o = document.createElement("option");
+        o.value = t;
+        o.textContent = t;
+        ui.importTarget.appendChild(o);
+      }
+      ui.importTarget.value = "exoticGear.weapons";
+    }
+
+    function countCatalogItems() {
+      const total = allCatalogItemsFlat().length;
+      ui.catalogCount.textContent = total + " items";
+    }
+
     function renderAll() {
+      ensureCatalogShape();
       ensureCurrentShape();
+      countCatalogItems();
 
       const mso = catalog.multivariousStrangeOffers || {};
       const exotic = catalog.exoticGear || {};
       const loyalty = catalog.loyaltyProgramOfTheNine || {};
-
-      ui.msoCatalysts.innerHTML = "";
-      ui.msoArmor.innerHTML = "";
 
       renderPickList(
         ui.msoCatalysts,
@@ -535,6 +677,8 @@
         2,
         (idx, val) => { current.multivariousStrangeOffers.catalysts[idx] = val; }
       );
+
+      ui.msoArmor.innerHTML = "";
 
       renderPickList(
         ui.msoArmor,
@@ -612,7 +756,7 @@
     }
 
     async function fetchJson(path) {
-      const url = new URL(path, window.location.href);
+      const url = new URL(path, window.location.origin);
       url.searchParams.set("v", String(Date.now()));
       logDebug("FETCH " + url.toString());
 
@@ -629,23 +773,8 @@
       return JSON.parse(trimmed);
     }
 
-    function getToken() {
-      return ui.token.value.trim();
-    }
-
-    function setTokenLocal(token) {
-      try { localStorage.setItem(LS_TOKEN_KEY, token); } catch {}
-    }
-
-    function restoreTokenLocal() {
-      try {
-        const t = localStorage.getItem(LS_TOKEN_KEY);
-        if (t) ui.token.value = t;
-      } catch {}
-    }
-
     async function ghGetFile(owner, repo, path, branch, token) {
-      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path + "?ref=" + encodeURIComponent(branch);
+      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path.replace(/^\/+/, "") + "?ref=" + encodeURIComponent(branch);
       logDebug("GH GET " + api);
 
       const res = await fetch(api, {
@@ -661,11 +790,11 @@
     }
 
     async function ghPutFile(owner, repo, path, branch, token, contentText, sha) {
-      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path;
+      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path.replace(/^\/+/, "");
       logDebug("GH PUT " + api);
 
       const body = {
-        message: "Update " + path,
+        message: "Update " + path.replace(/^\/+/, ""),
         content: btoa(unescape(encodeURIComponent(contentText))),
         branch: branch
       };
@@ -712,9 +841,78 @@
       };
     }
 
+    function getTargetArray(target) {
+      ensureCatalogShape();
+
+      if (target === "multivariousStrangeOffers.catalysts") return catalog.multivariousStrangeOffers.catalysts;
+      if (target === "multivariousStrangeOffers.exoticArmor") return catalog.multivariousStrangeOffers.exoticArmor;
+      if (target === "multivariousStrangeOffers.classItems") return catalog.multivariousStrangeOffers.classItems;
+
+      if (target === "exoticGear.engram") return catalog.exoticGear.engram;
+      if (target === "exoticGear.weapons") return catalog.exoticGear.weapons;
+
+      if (target === "legendaryWeapons") return catalog.legendaryWeapons;
+      if (target === "legendaryArmor") return catalog.legendaryArmor;
+
+      if (target === "loyaltyProgramOfTheNine.resetRank") return catalog.loyaltyProgramOfTheNine.resetRank;
+
+      if (target === "strangeMaterialOffers") return catalog.strangeMaterialOffers;
+      if (target === "strangeRepeatableOffers") return catalog.strangeRepeatableOffers;
+
+      throw new Error("Unknown target: " + target);
+    }
+
+    function importIntoCatalog(parsed, defaultTarget) {
+      ensureCatalogShape();
+
+      let added = 0;
+      const pushUnique = (arr, item) => {
+        if (!item || !item.name) return;
+        if (!arr.some(x => x && x.name === item.name)) {
+          arr.push({ name: item.name, icon: item.icon || "" });
+          added++;
+        }
+      };
+
+      if (Array.isArray(parsed)) {
+        for (const it of parsed) {
+          if (!it || !it.name) continue;
+          const target = it.target || defaultTarget;
+          const arr = getTargetArray(target);
+          pushUnique(arr, it);
+        }
+      } else if (parsed && typeof parsed === "object") {
+        const arr = getTargetArray(defaultTarget);
+        for (const [name, icon] of Object.entries(parsed)) {
+          pushUnique(arr, { name, icon });
+        }
+      } else {
+        throw new Error("Import JSON must be an array or an object map.");
+      }
+
+      catalog.multivariousStrangeOffers.catalysts = uniqByName(catalog.multivariousStrangeOffers.catalysts);
+      catalog.multivariousStrangeOffers.exoticArmor = uniqByName(catalog.multivariousStrangeOffers.exoticArmor);
+      catalog.multivariousStrangeOffers.classItems = uniqByName(catalog.multivariousStrangeOffers.classItems);
+
+      catalog.exoticGear.engram = uniqByName(catalog.exoticGear.engram);
+      catalog.exoticGear.weapons = uniqByName(catalog.exoticGear.weapons);
+
+      catalog.legendaryWeapons = uniqByName(catalog.legendaryWeapons);
+      catalog.legendaryArmor = uniqByName(catalog.legendaryArmor);
+
+      catalog.loyaltyProgramOfTheNine.resetRank = uniqByName(catalog.loyaltyProgramOfTheNine.resetRank);
+
+      catalog.strangeMaterialOffers = uniqByName(catalog.strangeMaterialOffers);
+      catalog.strangeRepeatableOffers = uniqByName(catalog.strangeRepeatableOffers);
+
+      ensureCatalogShape();
+      return added;
+    }
+
     ui.loadBtn.addEventListener("click", async () => {
       hideMsg(ui.status);
       hideMsg(ui.saveMsg);
+      hideMsg(ui.catalogMsg);
       clearDebug();
 
       const token = getToken();
@@ -722,14 +920,26 @@
         showMsg(ui.status, "err", "Missing GitHub token.");
         return;
       }
-
       setTokenLocal(token);
 
       try {
         showMsg(ui.status, "", "Loading catalog and current inventory...");
 
-        catalog = await fetchJson(PATH_CATALOG);
-        if (!catalog || typeof catalog !== "object") throw new Error("Catalog loaded but is empty or invalid.");
+        try {
+          catalog = await fetchJson(PATH_CATALOG);
+        } catch (e) {
+          catalog = null;
+          logDebug("Catalog load failed; you need to create /data/xurCatalog.json. " + e.message);
+        }
+
+        if (!catalog) {
+          catalog = {};
+          ensureCatalogShape();
+          showMsg(ui.status, "err", "Catalog file missing. Create /data/xurCatalog.json or import and save it below.");
+        } else {
+          ensureCatalogShape();
+          showMsg(ui.status, "ok", "Loaded.");
+        }
 
         try {
           current = await fetchJson(PATH_CURRENT);
@@ -739,12 +949,61 @@
         }
 
         ensureCurrentShape();
-        renderAll();
-
+        renderTargetSelect();
+        ui.catalogTools.style.display = "";
         ui.editor.style.display = "";
-        showMsg(ui.status, "ok", "Loaded.");
+        renderAll();
       } catch (e) {
         showMsg(ui.status, "err", String(e && e.message ? e.message : e));
+      }
+    });
+
+    ui.importBtn.addEventListener("click", () => {
+      hideMsg(ui.catalogMsg);
+
+      try {
+        const raw = ui.importText.value.trim();
+        if (!raw) throw new Error("Paste JSON to import.");
+
+        const parsed = JSON.parse(raw);
+        const target = ui.importTarget.value;
+
+        const added = importIntoCatalog(parsed, target);
+        countCatalogItems();
+        renderAll();
+
+        showMsg(ui.catalogMsg, "ok", "Imported. Added " + added + " new items. Save the catalog to GitHub.");
+      } catch (e) {
+        showMsg(ui.catalogMsg, "err", String(e && e.message ? e.message : e));
+      }
+    });
+
+    ui.saveCatalogBtn.addEventListener("click", async () => {
+      hideMsg(ui.catalogMsg);
+      clearDebug();
+
+      const token = getToken();
+      if (!token) {
+        showMsg(ui.catalogMsg, "err", "Missing GitHub token.");
+        return;
+      }
+
+      const owner = ui.owner.value.trim();
+      const repo = ui.repo.value.trim();
+      const branch = ui.branch.value.trim();
+
+      try {
+        ensureCatalogShape();
+        const contentText = JSON.stringify(catalog, null, 2) + "\n";
+
+        const path = (BASE + "/data/xurCatalog.json").replace(/^\/+/, "");
+        const existing = await ghGetFile(owner, repo, path, branch, token).catch(() => null);
+        const sha = existing && existing.sha ? existing.sha : null;
+
+        await ghPutFile(owner, repo, path, branch, token, contentText, sha);
+        showMsg(ui.catalogMsg, "ok", "Catalog saved. Reload and your dropdowns will have options.");
+      } catch (e) {
+        showMsg(ui.catalogMsg, "err", String(e && e.message ? e.message : e));
       }
     });
 
@@ -766,13 +1025,13 @@
         showMsg(ui.saveMsg, "", "Saving...");
 
         const weekly = buildWeeklyJson();
-        const contentText = JSON.stringify(weekly, null, 2) + "\\n";
+        const contentText = JSON.stringify(weekly, null, 2) + "\n";
 
-        const existing = await ghGetFile(owner, repo, PATH_CURRENT, branch, token).catch(() => null);
+        const path = (BASE + "/data/xurCurrentInventory.json").replace(/^\/+/, "");
+        const existing = await ghGetFile(owner, repo, path, branch, token).catch(() => null);
         const sha = existing && existing.sha ? existing.sha : null;
 
-        await ghPutFile(owner, repo, PATH_CURRENT, branch, token, contentText, sha);
-
+        await ghPutFile(owner, repo, path, branch, token, contentText, sha);
         showMsg(ui.saveMsg, "ok", "Saved. Hard refresh the live site.");
       } catch (e) {
         showMsg(ui.saveMsg, "err", String(e && e.message ? e.message : e));
