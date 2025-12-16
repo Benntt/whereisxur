@@ -27,6 +27,7 @@
     .ok { color: #16a34a; }
     .err { color: #b91c1c; }
     code { background: #eef2ff; padding: 2px 6px; border-radius: 6px; }
+    .debug { white-space: pre-wrap; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size: 12px; background: #0b1020; color: #e5e7eb; padding: 10px; border-radius: 10px; overflow: auto; }
   </style>
 </head>
 <body>
@@ -42,7 +43,7 @@
         <p class="small">Stored locally in your browser; never commit it.</p>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
-        <button id="loadBtn" class="btn">Load Inventory</button>
+        <button id="loadBtn" class="btn" type="button">Load Inventory</button>
         <span id="loadStatus" class="status"></span>
       </div>
     </div>
@@ -79,18 +80,18 @@
     <h2 style="margin-top:22px;">Exotic Weapons</h2>
     <p class="small">Pick up to 5.</p>
     <div class="grid grid-5" style="margin-top:10px;">
-      <div><label>Weapon 1</label><select id="weapon1" disabled><option value="">None</option></select></div>
-      <div><label>Weapon 2</label><select id="weapon2" disabled><option value="">None</option></select></div>
-      <div><label>Weapon 3</label><select id="weapon3" disabled><option value="">None</option></select></div>
-      <div><label>Weapon 4</label><select id="weapon4" disabled><option value="">None</option></select></div>
-      <div><label>Weapon 5</label><select id="weapon5" disabled><option value="">None</option></select></div>
+      <div><label for="weapon1">Weapon 1</label><select id="weapon1" disabled><option value="">None</option></select></div>
+      <div><label for="weapon2">Weapon 2</label><select id="weapon2" disabled><option value="">None</option></select></div>
+      <div><label for="weapon3">Weapon 3</label><select id="weapon3" disabled><option value="">None</option></select></div>
+      <div><label for="weapon4">Weapon 4</label><select id="weapon4" disabled><option value="">None</option></select></div>
+      <div><label for="weapon5">Weapon 5</label><select id="weapon5" disabled><option value="">None</option></select></div>
     </div>
 
     <h2 style="margin-top:22px;">Exotic Catalysts</h2>
     <p class="small">Pick up to 2.</p>
     <div class="grid grid-2" style="margin-top:10px;">
-      <div><label>Catalyst 1</label><select id="catalyst1" disabled><option value="">None</option></select></div>
-      <div><label>Catalyst 2</label><select id="catalyst2" disabled><option value="">None</option></select></div>
+      <div><label for="catalyst1">Catalyst 1</label><select id="catalyst1" disabled><option value="">None</option></select></div>
+      <div><label for="catalyst2">Catalyst 2</label><select id="catalyst2" disabled><option value="">None</option></select></div>
     </div>
 
     <div class="row" style="margin-top:18px;">
@@ -101,11 +102,16 @@
       </div>
     </div>
   </form>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="small">Debug output (copy this if something breaks)</div>
+    <div id="debug" class="debug" style="margin-top:8px;"></div>
+  </div>
 </div>
 
 <script>
-  const GITHUB_OWNER = "damnitbennett";
-const GITHUB_REPO = "whereisxur-admin";
+  const GITHUB_OWNER = "Benntt";
+  const GITHUB_REPO = "whereisxur-admin";
   const GITHUB_BRANCH = "main";
   const MASTER_PATH = "data/xurMasterInventory.json";
   const CURRENT_PATH = "data/xurCurrentInventory.json";
@@ -117,6 +123,7 @@ const GITHUB_REPO = "whereisxur-admin";
   const loadStatus = document.getElementById("loadStatus");
   const saveBtn = document.getElementById("saveBtn");
   const saveStatus = document.getElementById("saveStatus");
+  const debugEl = document.getElementById("debug");
 
   const armorSelectIds = ["hunterArmor1","hunterArmor2","titanArmor1","titanArmor2","warlockArmor1","warlockArmor2"];
   const weaponSelectIds = ["weapon1","weapon2","weapon3","weapon4","weapon5"];
@@ -124,6 +131,15 @@ const GITHUB_REPO = "whereisxur-admin";
 
   let masterData = null;
   let currentData = null;
+
+  function logDebug(line) {
+    debugEl.textContent = (debugEl.textContent ? (debugEl.textContent + "\n") : "") + line;
+  }
+
+  function setStatus(el, msg, cls) {
+    el.textContent = msg;
+    el.className = "status " + (cls || "");
+  }
 
   (function initToken() {
     const stored = localStorage.getItem("xur_admin_token");
@@ -135,11 +151,6 @@ const GITHUB_REPO = "whereisxur-admin";
     if (val) localStorage.setItem("xur_admin_token", val);
     else localStorage.removeItem("xur_admin_token");
   });
-
-  function setStatus(el, msg, cls) {
-    el.textContent = msg;
-    el.className = "status " + (cls || "");
-  }
 
   function enableForm() {
     [...armorSelectIds, ...weaponSelectIds, ...catalystSelectIds].forEach(id => {
@@ -217,6 +228,36 @@ const GITHUB_REPO = "whereisxur-admin";
     return out.slice(0, 3);
   }
 
+  function urlFor(pathFromRoot) {
+    // admin/ is one folder deep; this reliably resolves to repo root on Pages
+    return new URL("../" + pathFromRoot + "?v=" + Date.now(), window.location.href).toString();
+  }
+
+  async function fetchJsonStrict(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    const txt = await res.text();
+
+    logDebug("FETCH " + url);
+    logDebug("STATUS " + res.status);
+    logDebug("BYTES " + txt.length);
+
+    if (!res.ok) {
+      throw new Error("Fetch failed: " + res.status + " for " + url);
+    }
+
+    const trimmed = txt.trim();
+    if (!trimmed) {
+      throw new Error("Empty response body for " + url);
+    }
+
+    try {
+      return JSON.parse(trimmed);
+    } catch (e) {
+      const head = trimmed.slice(0, 200);
+      throw new Error("Invalid JSON at " + url + ". First 200 chars: " + head);
+    }
+  }
+
   async function saveToGitHub(token, obj) {
     const api = "https://api.github.com";
     const pathEnc = encodeURIComponent(CURRENT_PATH);
@@ -254,8 +295,10 @@ const GITHUB_REPO = "whereisxur-admin";
   }
 
   loadBtn.addEventListener("click", async () => {
+    debugEl.textContent = "";
     setStatus(loadStatus, "", "");
     setStatus(saveStatus, "", "");
+
     const token = tokenInput.value.trim();
     if (!token) { setStatus(loadStatus, "Token required.", "err"); return; }
 
@@ -263,22 +306,19 @@ const GITHUB_REPO = "whereisxur-admin";
     setStatus(loadStatus, "Loading…", "");
 
     try {
-      const masterUrl = `../${MASTER_PATH}`;
-      const currentUrl = `../${CURRENT_PATH}`;
+      const masterUrl = urlFor(MASTER_PATH);
+      const currentUrl = urlFor(CURRENT_PATH);
 
-      const [mRes, cRes] = await Promise.all([fetch(masterUrl, { cache:"no-store" }), fetch(currentUrl, { cache:"no-store" })]);
-      if (!mRes.ok) throw new Error("Failed to load master inventory JSON.");
-      masterData = await mRes.json();
-
-      if (cRes.ok) currentData = await cRes.json();
-      else currentData = { exoticArmor:{hunter:[],titan:[],warlock:[]}, exoticWeapons:[], exoticCatalysts:[] };
+      masterData = await fetchJsonStrict(masterUrl);
+      currentData = await fetchJsonStrict(currentUrl);
 
       populateForm(masterData, currentData);
       enableForm();
       setStatus(loadStatus, "Loaded.", "ok");
     } catch (e) {
       console.error(e);
-      setStatus(loadStatus, "Load failed. Open console for details.", "err");
+      logDebug("ERROR " + (e.message || String(e)));
+      setStatus(loadStatus, "Load failed. See debug box.", "err");
     } finally {
       loadBtn.disabled = false;
     }
@@ -286,6 +326,8 @@ const GITHUB_REPO = "whereisxur-admin";
 
   document.getElementById("xurForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    setStatus(saveStatus, "", "");
+
     const token = tokenInput.value.trim();
     if (!token) { setStatus(saveStatus, "Token required.", "err"); return; }
     if (!masterData) { setStatus(saveStatus, "Load inventory first.", "err"); return; }
@@ -326,4 +368,3 @@ const GITHUB_REPO = "whereisxur-admin";
 </script>
 </body>
 </html>
-
