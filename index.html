@@ -83,10 +83,6 @@
       gap: var(--gap);
     }
 
-    @media (max-width: 980px) {
-      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
     @media (max-width: 560px) {
       .cards { grid-template-columns: 1fr; }
     }
@@ -140,9 +136,7 @@
       display: block;
     }
 
-    .meta {
-      min-width: 0;
-    }
+    .meta { min-width: 0; }
 
     .name {
       font-weight: 700;
@@ -162,8 +156,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .row-gap { margin-top: 16px; }
 
     .error {
       margin-top: 14px;
@@ -186,7 +178,7 @@
 <body>
   <div class="wrap">
     <h1>What is Xur Selling This Week?</h1>
-    <div class="datasource">Data source: <code>/data/xurCurrentInventory.json</code></div>
+    <div class="datasource">Data source: <code id="ds"></code></div>
 
     <div id="status" class="loading">Loading inventory…</div>
     <div id="error" class="error" style="display:none;"></div>
@@ -221,7 +213,11 @@
   </div>
 
   <script>
-    const DATA_URL = "/data/xurCurrentInventory.json";
+    // Relative path fixes GitHub Pages project sites (…/whereisxur/).
+    const DATA_PATH = "data/xurCurrentInventory.json";
+
+    // Display a helpful, accurate path in the UI.
+    document.getElementById("ds").textContent = "/" + DATA_PATH;
 
     function resolveIcon(icon) {
       if (!icon) return "";
@@ -347,17 +343,17 @@
         errorEl.style.display = "none";
         statusEl.textContent = "Loading inventory…";
 
-        const res = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
+        // Resolve relative to the current page (works on /whereisxur/ and locally).
+        const url = new URL(DATA_PATH, window.location.href);
+        url.searchParams.set("v", String(Date.now()));
+
+        const res = await fetch(url.toString(), { cache: "no-store" });
         const text = await res.text();
 
-        if (!res.ok) {
-          throw new Error(`Failed to load inventory (${res.status}).`);
-        }
+        if (!res.ok) throw new Error(`Failed to load inventory (${res.status}).`);
 
         const trimmed = text.trim();
-        if (!trimmed) {
-          throw new Error("Inventory JSON is empty.");
-        }
+        if (!trimmed) throw new Error("Inventory JSON is empty.");
 
         const data = JSON.parse(trimmed);
 
