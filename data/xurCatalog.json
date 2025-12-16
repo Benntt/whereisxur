@@ -1,12 +1,12 @@
 {
   "multivariousStrangeOffers": {
     "catalysts": [],
+    "exoticArmor": [],
     "classItems": [
       { "name": "Relativism", "icon": "" },
       { "name": "Stoicism", "icon": "" },
       { "name": "Solipsism", "icon": "" }
-    ],
-    "exoticArmor": []
+    ]
   },
   "exoticGear": {
     "engram": [],
