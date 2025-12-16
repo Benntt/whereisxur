@@ -1,18 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Xur Weekly Inventory Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; margin: 0; background: #f3f4f6; color: #111827; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
-    h1 { font-size: 28px; margin: 0 0 10px; }<!DOCTYPE html>
-<html lang="en">
-<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Xur Weekly Inventory Admin</title>
+
   <style>
     :root{
       --bg:#ffffff;
@@ -43,6 +35,7 @@
 
     .wrap{max-width:1200px;margin:0 auto;padding:22px 18px 60px}
     h1{margin:0 0 6px;font-size:34px;letter-spacing:-.02em}
+
     .sub{margin:0 0 18px;color:var(--muted);font-size:13px}
     .sub code{
       background:#f1f5f9;
@@ -95,7 +88,6 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
       padding:11px 14px;
       border-radius:12px;
       border:1px solid transparent;
@@ -106,7 +98,6 @@
       font-size:14px;
       user-select:none;
     }
-    .btn.secondary{background:#0f172a}
     .btn.ghost{
       background:#ffffff;
       color:#0f172a;
@@ -130,9 +121,6 @@
     h2{margin:0 0 10px;font-size:22px;letter-spacing:-.01em}
     h3{margin:18px 0 10px;font-size:16px}
 
-    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
-    @media(max-width:980px){.grid3{grid-template-columns:1fr}}
-
     .help{margin:8px 0 0;color:var(--muted);font-size:13px}
 
     .pick-grid{
@@ -152,15 +140,12 @@
       background:#ffffff;
     }
 
-    .locked{
-      opacity:.8;
-    }
-
     .preview{
       display:flex;
       align-items:center;
       gap:10px;
     }
+
     .thumb{
       width:42px;
       height:42px;
@@ -204,6 +189,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <h1>Xur Weekly Inventory Admin</h1>
@@ -216,7 +202,7 @@
       <div class="row">
         <div class="field">
           <label for="token">GitHub token (contents: read/write)</label>
-          <input id="token" type="password" placeholder="ghp_..." autocomplete="off" />
+          <input id="token" type="password" placeholder="github_pat_..." autocomplete="off" />
           <div class="help">Stored in your browser only; do not commit it.</div>
         </div>
         <div class="field tiny">
@@ -276,16 +262,16 @@
       <div id="loyaltyNine"></div>
 
       <h3>Strange Material Offers</h3>
-      <div class="help">Ascendant Shard, prisms, cores, and other materials you include in catalog.</div>
+      <div class="help">Ascendant Shard, prisms, cores, and any other materials in catalog.</div>
       <div id="materials"></div>
 
       <h3>Strange Repeatable Offers</h3>
-      <div class="help">Repeatable bounty/currency items you include in catalog.</div>
+      <div class="help">Repeatable bounty/currency items in catalog.</div>
       <div id="repeatables"></div>
 
       <div class="row" style="margin-top:18px">
         <button id="saveBtn" class="btn" type="button">Save Weekly Inventory</button>
-        <button id="exportBtn" class="btn ghost" type="button">Copy Current JSON to Clipboard</button>
+        <button id="exportBtn" class="btn ghost" type="button">Copy Current JSON</button>
       </div>
 
       <div id="saveMsg" class="msg" style="display:none"></div>
@@ -295,12 +281,12 @@
   <script>
     const PATH_CATALOG = "data/xurCatalog.json";
     const PATH_CURRENT = "data/xurCurrentInventory.json";
-    const LS_TOKEN_KEY = "xur_admin_token_v1";
+    const LS_TOKEN_KEY = "xur_admin_token_v2";
 
     const CLASS_ITEMS_LOCKED = {
-      hunter: { name: "Relativism" },
-      titan: { name: "Stoicism" },
-      warlock: { name: "Solipsism" }
+      hunter: "Relativism",
+      titan: "Stoicism",
+      warlock: "Solipsism"
     };
 
     const ui = {
@@ -341,9 +327,13 @@
       el.textContent = "";
     }
 
-    function logDebug(line) {
+    function debugOn() {
       ui.debug.style.display = "";
-      ui.debug.textContent += line + "\n";
+    }
+
+    function logDebug(line) {
+      debugOn();
+      ui.debug.textContent += line + "\\n";
       ui.debug.scrollTop = ui.debug.scrollHeight;
     }
 
@@ -369,15 +359,16 @@
 
     function ensureCurrentShape() {
       if (!current || typeof current !== "object") current = {};
+
       current.weekStartISO = current.weekStartISO || new Date().toISOString();
 
       current.multivariousStrangeOffers = current.multivariousStrangeOffers || {};
       current.multivariousStrangeOffers.catalysts = current.multivariousStrangeOffers.catalysts || [];
       current.multivariousStrangeOffers.exoticArmor = current.multivariousStrangeOffers.exoticArmor || [];
       current.multivariousStrangeOffers.classItems = {
-        hunter: CLASS_ITEMS_LOCKED.hunter.name,
-        titan: CLASS_ITEMS_LOCKED.titan.name,
-        warlock: CLASS_ITEMS_LOCKED.warlock.name
+        hunter: CLASS_ITEMS_LOCKED.hunter,
+        titan: CLASS_ITEMS_LOCKED.titan,
+        warlock: CLASS_ITEMS_LOCKED.warlock
       };
 
       current.exoticGear = current.exoticGear || {};
@@ -398,57 +389,53 @@
       const list = uniqByName(items);
       const opts = [];
       if (allowNone) opts.push({ value: "", label: "None" });
-      for (const it of list) {
-        opts.push({ value: it.name, label: it.name });
-      }
+      for (const it of list) opts.push({ value: it.name, label: it.name });
       return opts;
     }
 
-    function getItemByNameInCatalog(name) {
-      if (!name) return null;
-      const all = []
-        .concat(catalog?.multivariousStrangeOffers?.catalysts || [])
-        .concat(catalog?.multivariousStrangeOffers?.exoticArmor || [])
-        .concat(catalog?.multivariousStrangeOffers?.classItems || [])
-        .concat(catalog?.exoticGear?.engram || [])
-        .concat(catalog?.exoticGear?.weapons || [])
+    function allCatalogItemsFlat() {
+      const mso = catalog?.multivariousStrangeOffers || {};
+      const exotic = catalog?.exoticGear || {};
+      const loyalty = catalog?.loyaltyProgramOfTheNine || {};
+
+      return []
+        .concat(mso.catalysts || [])
+        .concat(mso.classItems || [])
+        .concat(mso.exoticArmor || [])
+        .concat(exotic.engram || [])
+        .concat(exotic.weapons || [])
         .concat(catalog?.legendaryWeapons || [])
         .concat(catalog?.legendaryArmor || [])
-        .concat(catalog?.loyaltyProgramOfTheNine?.resetRank || [])
+        .concat(loyalty.resetRank || [])
         .concat(catalog?.strangeMaterialOffers || [])
         .concat(catalog?.strangeRepeatableOffers || []);
-
-      return all.find(x => x && x.name === name) || null;
     }
 
-    function renderPickList(container, title, options, selectedNames, count, onChange, lockedNames) {
+    function getItemByName(name) {
+      if (!name) return null;
+      return allCatalogItemsFlat().find(x => x && x.name === name) || null;
+    }
+
+    function renderPickList(container, title, options, selectedNames, count, onChange) {
       container.innerHTML = "";
       const wrap = document.createElement("div");
       wrap.className = "item-row";
-      const h = document.createElement("div");
-      h.style.fontWeight = "800";
-      h.textContent = title;
-      wrap.appendChild(h);
+
+      const head = document.createElement("div");
+      head.style.fontWeight = "800";
+      head.textContent = title;
+      wrap.appendChild(head);
 
       for (let i = 0; i < count; i++) {
         const sel = document.createElement("select");
-        const locked = lockedNames && lockedNames[i];
-
         for (const opt of options) {
           const o = document.createElement("option");
           o.value = opt.value;
           o.textContent = opt.label;
           sel.appendChild(o);
         }
-
         sel.value = selectedNames[i] || "";
-        if (locked) {
-          sel.value = locked;
-          sel.disabled = true;
-          sel.classList.add("locked");
-        } else {
-          sel.addEventListener("change", () => onChange(i, sel.value));
-        }
+        sel.addEventListener("change", () => onChange(i, sel.value));
 
         const preview = document.createElement("div");
         preview.className = "preview";
@@ -457,16 +444,14 @@
         thumb.className = "thumb";
 
         const chosen = sel.value;
-        const item = getItemByNameInCatalog(chosen);
+        const item = getItemByName(chosen);
         const icon = item && item.icon ? resolveIcon(item.icon) : "";
 
         if (icon) {
           const img = document.createElement("img");
           img.src = icon;
           img.alt = chosen;
-          img.onerror = () => {
-            thumb.innerHTML = "<div class='na'>No image</div>";
-          };
+          img.onerror = () => { thumb.innerHTML = "<div class='na'>No image</div>"; };
           thumb.appendChild(img);
         } else {
           thumb.innerHTML = "<div class='na'>No image</div>";
@@ -491,58 +476,28 @@
       container.appendChild(wrap);
     }
 
-    function renderAll() {
-      ensureCurrentShape();
+    function renderLockedClassItems(container) {
+      const wrap = document.createElement("div");
+      wrap.className = "item-row";
 
-      const catMSO = catalog.multivariousStrangeOffers || {};
-      const catExotic = catalog.exoticGear || {};
-      const catLoyalty = catalog.loyaltyProgramOfTheNine || {};
+      const head = document.createElement("div");
+      head.style.fontWeight = "800";
+      head.textContent = "Class Items (locked)";
+      wrap.appendChild(head);
 
-      renderPickList(
-        ui.msoCatalysts,
-        "Catalysts (pick 2)",
-        asOptions(catMSO.catalysts || [], true),
-        current.multivariousStrangeOffers.catalysts,
-        2,
-        (idx, val) => { current.multivariousStrangeOffers.catalysts[idx] = val; }
-      );
-
-      renderPickList(
-        ui.msoArmor,
-        "Exotic Armor (pick 3)",
-        asOptions(catMSO.exoticArmor || [], true),
-        current.multivariousStrangeOffers.exoticArmor,
-        3,
-        (idx, val) => { current.multivariousStrangeOffers.exoticArmor[idx] = val; },
-        [
-          null,
-          null,
-          null
-        ]
-      );
-
-      const classItemsLocked = [
-        CLASS_ITEMS_LOCKED.hunter.name,
-        CLASS_ITEMS_LOCKED.titan.name,
-        CLASS_ITEMS_LOCKED.warlock.name
-      ];
-
-      const classWrap = document.createElement("div");
-      classWrap.className = "item-row";
-      classWrap.innerHTML = "<div style='font-weight:800'>Class Items (locked)</div>";
-      for (const n of classItemsLocked) {
-        const item = getItemByNameInCatalog(n);
+      for (const name of [CLASS_ITEMS_LOCKED.hunter, CLASS_ITEMS_LOCKED.titan, CLASS_ITEMS_LOCKED.warlock]) {
+        const item = getItemByName(name);
         const icon = item && item.icon ? resolveIcon(item.icon) : "";
 
         const line = document.createElement("div");
         line.className = "preview";
+
         const thumb = document.createElement("div");
         thumb.className = "thumb";
-
         if (icon) {
           const img = document.createElement("img");
           img.src = icon;
-          img.alt = n;
+          img.alt = name;
           img.onerror = () => { thumb.innerHTML = "<div class='na'>No image</div>"; };
           thumb.appendChild(img);
         } else {
@@ -551,23 +506,51 @@
 
         const label = document.createElement("div");
         label.className = "mono";
-        label.textContent = n;
+        label.textContent = name;
+
         line.appendChild(thumb);
         line.appendChild(label);
-        classWrap.appendChild(line);
+
+        wrap.appendChild(line);
       }
 
-      if (!ui.msoArmor.querySelector(".item-row.classitems")) {
-        classWrap.classList.add("classitems");
-        ui.msoArmor.appendChild(classWrap);
-      } else {
-        ui.msoArmor.replaceChild(classWrap, ui.msoArmor.querySelector(".item-row.classitems"));
-      }
+      container.appendChild(wrap);
+    }
+
+    function renderAll() {
+      ensureCurrentShape();
+
+      const mso = catalog.multivariousStrangeOffers || {};
+      const exotic = catalog.exoticGear || {};
+      const loyalty = catalog.loyaltyProgramOfTheNine || {};
+
+      ui.msoCatalysts.innerHTML = "";
+      ui.msoArmor.innerHTML = "";
+
+      renderPickList(
+        ui.msoCatalysts,
+        "Catalysts (pick 2)",
+        asOptions(mso.catalysts || [], true),
+        current.multivariousStrangeOffers.catalysts,
+        2,
+        (idx, val) => { current.multivariousStrangeOffers.catalysts[idx] = val; }
+      );
+
+      renderPickList(
+        ui.msoArmor,
+        "Exotic Armor (pick 3)",
+        asOptions(mso.exoticArmor || [], true),
+        current.multivariousStrangeOffers.exoticArmor,
+        3,
+        (idx, val) => { current.multivariousStrangeOffers.exoticArmor[idx] = val; }
+      );
+
+      renderLockedClassItems(ui.msoArmor);
 
       renderPickList(
         ui.exoticEngram,
         "Exotic Engram (pick 1)",
-        asOptions(catExotic.engram || [], true),
+        asOptions(exotic.engram || [], true),
         [current.exoticGear.engram || ""],
         1,
         (idx, val) => { current.exoticGear.engram = val || null; }
@@ -576,7 +559,7 @@
       renderPickList(
         ui.exoticWeapons,
         "Exotic Weapons (pick 5)",
-        asOptions(catExotic.weapons || [], true),
+        asOptions(exotic.weapons || [], true),
         current.exoticGear.weapons,
         5,
         (idx, val) => { current.exoticGear.weapons[idx] = val; }
@@ -603,7 +586,7 @@
       renderPickList(
         ui.loyaltyNine,
         "Reset Rank (pick 1)",
-        asOptions(catLoyalty.resetRank || [], true),
+        asOptions(loyalty.resetRank || [], true),
         [current.loyaltyProgramOfTheNine.resetRank || ""],
         1,
         (idx, val) => { current.loyaltyProgramOfTheNine.resetRank = val || null; }
@@ -611,7 +594,7 @@
 
       renderPickList(
         ui.materials,
-        "Materials (pick any count you want; default 8)",
+        "Materials (default 8)",
         asOptions(catalog.strangeMaterialOffers || [], true),
         current.strangeMaterialOffers,
         Math.max(8, current.strangeMaterialOffers.length || 0),
@@ -620,7 +603,7 @@
 
       renderPickList(
         ui.repeatables,
-        "Repeatables (pick any count you want; default 6)",
+        "Repeatables (default 6)",
         asOptions(catalog.strangeRepeatableOffers || [], true),
         current.strangeRepeatableOffers,
         Math.max(6, current.strangeRepeatableOffers.length || 0),
@@ -631,12 +614,16 @@
     async function fetchJson(path) {
       const url = new URL(path, window.location.href);
       url.searchParams.set("v", String(Date.now()));
-      logDebug(`FETCH ${url.toString()}`);
+      logDebug("FETCH " + url.toString());
+
       const res = await fetch(url.toString(), { cache: "no-store" });
       const txt = await res.text();
-      logDebug(`STATUS ${res.status}`);
-      logDebug(`BYTES ${txt.length}`);
-      if (!res.ok) throw new Error(`Fetch failed: ${path} (${res.status})`);
+
+      logDebug("STATUS " + res.status);
+      logDebug("BYTES " + txt.length);
+
+      if (!res.ok) throw new Error("Fetch failed: " + path + " (" + res.status + ")");
+
       const trimmed = txt.trim();
       if (!trimmed) return null;
       return JSON.parse(trimmed);
@@ -658,36 +645,36 @@
     }
 
     async function ghGetFile(owner, repo, path, branch, token) {
-      const api = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}?ref=${encodeURIComponent(branch)}`;
-      logDebug(`GH GET ${api}`);
+      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path + "?ref=" + encodeURIComponent(branch);
+      logDebug("GH GET " + api);
+
       const res = await fetch(api, {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": "Bearer " + token,
           "Accept": "application/vnd.github+json"
         }
       });
+
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(`GitHub read failed: ${res.status} ${JSON.stringify(json)}`);
-      }
+      if (!res.ok) throw new Error("GitHub read failed: " + res.status + " " + JSON.stringify(json));
       return json;
     }
 
     async function ghPutFile(owner, repo, path, branch, token, contentText, sha) {
-      const api = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`;
-      logDebug(`GH PUT ${api}`);
+      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path;
+      logDebug("GH PUT " + api);
 
       const body = {
-        message: `Update ${path}`,
+        message: "Update " + path,
         content: btoa(unescape(encodeURIComponent(contentText))),
-        branch
+        branch: branch
       };
       if (sha) body.sha = sha;
 
       const res = await fetch(api, {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": "Bearer " + token,
           "Accept": "application/vnd.github+json",
           "Content-Type": "application/json"
         },
@@ -695,38 +682,34 @@
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(`GitHub commit failed: ${res.status} ${JSON.stringify(json)}`);
-      }
+      if (!res.ok) throw new Error("GitHub commit failed: " + res.status + " " + JSON.stringify(json));
       return json;
     }
 
     function buildWeeklyJson() {
       ensureCurrentShape();
 
-      const stripEmpty = (arr) => (arr || []).filter(x => x && String(x).trim().length > 0);
+      const strip = (arr) => (arr || []).filter(x => x && String(x).trim().length > 0);
 
-      const out = {
+      return {
         weekStartISO: current.weekStartISO,
         multivariousStrangeOffers: {
-          catalysts: stripEmpty(current.multivariousStrangeOffers.catalysts),
+          catalysts: strip(current.multivariousStrangeOffers.catalysts),
           classItems: current.multivariousStrangeOffers.classItems,
-          exoticArmor: stripEmpty(current.multivariousStrangeOffers.exoticArmor)
+          exoticArmor: strip(current.multivariousStrangeOffers.exoticArmor)
         },
         exoticGear: {
           engram: current.exoticGear.engram || null,
-          weapons: stripEmpty(current.exoticGear.weapons)
+          weapons: strip(current.exoticGear.weapons)
         },
-        legendaryWeapons: stripEmpty(current.legendaryWeapons),
-        legendaryArmor: stripEmpty(current.legendaryArmor),
+        legendaryWeapons: strip(current.legendaryWeapons),
+        legendaryArmor: strip(current.legendaryArmor),
         loyaltyProgramOfTheNine: {
           resetRank: current.loyaltyProgramOfTheNine.resetRank || null
         },
-        strangeMaterialOffers: stripEmpty(current.strangeMaterialOffers),
-        strangeRepeatableOffers: stripEmpty(current.strangeRepeatableOffers)
+        strangeMaterialOffers: strip(current.strangeMaterialOffers),
+        strangeRepeatableOffers: strip(current.strangeRepeatableOffers)
       };
-
-      return out;
     }
 
     ui.loadBtn.addEventListener("click", async () => {
@@ -744,20 +727,16 @@
 
       try {
         showMsg(ui.status, "", "Loading catalog and current inventory...");
-        catalog = await fetchJson(PATH_CATALOG);
 
-        if (!catalog || typeof catalog !== "object") {
-          throw new Error("Catalog file loaded, but it is empty or invalid JSON.");
-        }
+        catalog = await fetchJson(PATH_CATALOG);
+        if (!catalog || typeof catalog !== "object") throw new Error("Catalog loaded but is empty or invalid.");
 
         try {
           current = await fetchJson(PATH_CURRENT);
-        } catch (e) {
+        } catch {
           current = {};
-          logDebug(`Current missing or invalid, starting fresh. ${e.message}`);
+          logDebug("Current missing or invalid, starting fresh.");
         }
-
-        if (!current || typeof current !== "object") current = {};
 
         ensureCurrentShape();
         renderAll();
@@ -787,7 +766,7 @@
         showMsg(ui.saveMsg, "", "Saving...");
 
         const weekly = buildWeeklyJson();
-        const contentText = JSON.stringify(weekly, null, 2) + "\n";
+        const contentText = JSON.stringify(weekly, null, 2) + "\\n";
 
         const existing = await ghGetFile(owner, repo, PATH_CURRENT, branch, token).catch(() => null);
         const sha = existing && existing.sha ? existing.sha : null;
@@ -805,378 +784,16 @@
       try {
         const weekly = buildWeeklyJson();
         const contentText = JSON.stringify(weekly, null, 2);
-
         await navigator.clipboard.writeText(contentText);
         showMsg(ui.saveMsg, "ok", "Copied weekly JSON to clipboard.");
-      } catch (e) {
-        showMsg(ui.saveMsg, "err", "Clipboard copy failed. Select and copy from the debug panel instead.");
-        ui.debug.style.display = "";
+      } catch {
+        showMsg(ui.saveMsg, "err", "Clipboard copy failed; copy from debug output.");
+        debugOn();
         ui.debug.textContent = JSON.stringify(buildWeeklyJson(), null, 2);
       }
     });
 
     restoreTokenLocal();
   </script>
-</body>
-</html>
-
-    h2 { font-size: 20px; margin: 22px 0 10px; }
-    h3 { font-size: 16px; margin: 14px 0 8px; }
-    .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(15,23,42,.1); padding: 16px 18px; margin-top: 14px; }
-    label { display: block; font-size: 13px; margin-bottom: 4px; }
-    input, select { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; background: #fff; }
-    select:disabled { background: #e5e7eb; cursor: not-allowed; }
-    .grid { display: grid; gap: 14px; }
-    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .grid-5 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-    .small { font-size: 12px; color: #6b7280; margin: 6px 0 0; }
-    button { border: 0; border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; }
-    .btn { background: #4f46e5; color: #fff; }
-    .btn:disabled { background: #9ca3af; cursor: not-allowed; }
-    .status { font-size: 13px; margin-left: 8px; }
-    .ok { color: #16a34a; }
-    .err { color: #b91c1c; }
-    code { background: #eef2ff; padding: 2px 6px; border-radius: 6px; }
-    .debug { white-space: pre-wrap; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size: 12px; background: #0b1020; color: #e5e7eb; padding: 10px; border-radius: 10px; overflow: auto; }
-  </style>
-</head>
-<body>
-<div class="container">
-  <h1>Xur Weekly Inventory Admin</h1>
-  <p class="small">Reads <code>/data/xurMasterInventory.json</code>; writes <code>/data/xurCurrentInventory.json</code>.</p>
-
-  <div class="card">
-    <div class="row">
-      <div style="flex:1; min-width:260px;">
-        <label for="token">GitHub token (Contents read/write for this repo only)</label>
-        <input id="token" type="password" placeholder="github_pat_..." autocomplete="off">
-        <p class="small">Stored locally in your browser; never commit it.</p>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <button id="loadBtn" class="btn" type="button">Load Inventory</button>
-        <span id="loadStatus" class="status"></span>
-      </div>
-    </div>
-  </div>
-
-  <form id="xurForm" class="card">
-    <h2>Exotic Armor</h2>
-    <p class="small">Pick 2 per class. Class items are auto added: Relativism, Stoicism, Solipsism.</p>
-
-    <div class="grid grid-3" style="margin-top:10px;">
-      <div>
-        <h3>Hunter</h3>
-        <label for="hunterArmor1">Exotic 1</label>
-        <select id="hunterArmor1" disabled><option value="">None</option></select>
-        <label for="hunterArmor2" style="margin-top:8px;">Exotic 2</label>
-        <select id="hunterArmor2" disabled><option value="">None</option></select>
-      </div>
-      <div>
-        <h3>Titan</h3>
-        <label for="titanArmor1">Exotic 1</label>
-        <select id="titanArmor1" disabled><option value="">None</option></select>
-        <label for="titanArmor2" style="margin-top:8px;">Exotic 2</label>
-        <select id="titanArmor2" disabled><option value="">None</option></select>
-      </div>
-      <div>
-        <h3>Warlock</h3>
-        <label for="warlockArmor1">Exotic 1</label>
-        <select id="warlockArmor1" disabled><option value="">None</option></select>
-        <label for="warlockArmor2" style="margin-top:8px;">Exotic 2</label>
-        <select id="warlockArmor2" disabled><option value="">None</option></select>
-      </div>
-    </div>
-
-    <h2 style="margin-top:22px;">Exotic Weapons</h2>
-    <p class="small">Pick up to 5.</p>
-    <div class="grid grid-5" style="margin-top:10px;">
-      <div><label for="weapon1">Weapon 1</label><select id="weapon1" disabled><option value="">None</option></select></div>
-      <div><label for="weapon2">Weapon 2</label><select id="weapon2" disabled><option value="">None</option></select></div>
-      <div><label for="weapon3">Weapon 3</label><select id="weapon3" disabled><option value="">None</option></select></div>
-      <div><label for="weapon4">Weapon 4</label><select id="weapon4" disabled><option value="">None</option></select></div>
-      <div><label for="weapon5">Weapon 5</label><select id="weapon5" disabled><option value="">None</option></select></div>
-    </div>
-
-    <h2 style="margin-top:22px;">Exotic Catalysts</h2>
-    <p class="small">Pick up to 2.</p>
-    <div class="grid grid-2" style="margin-top:10px;">
-      <div><label for="catalyst1">Catalyst 1</label><select id="catalyst1" disabled><option value="">None</option></select></div>
-      <div><label for="catalyst2">Catalyst 2</label><select id="catalyst2" disabled><option value="">None</option></select></div>
-    </div>
-
-    <div class="row" style="margin-top:18px;">
-      <div class="small">On save, commits to <code>data/xurCurrentInventory.json</code>.</div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <button id="saveBtn" class="btn" type="submit" disabled>Save Weekly Inventory</button>
-        <span id="saveStatus" class="status"></span>
-      </div>
-    </div>
-  </form>
-
-  <div class="card" style="margin-top:14px;">
-    <div class="small">Debug output (copy this if something breaks)</div>
-    <div id="debug" class="debug" style="margin-top:8px;"></div>
-  </div>
-</div>
-
-<script>
-  const GITHUB_OWNER = "Benntt";
-  const GITHUB_REPO = "whereisxur";
-  const GITHUB_BRANCH = "main";
-  const MASTER_PATH = "data/xurMasterInventory.json";
-  const CURRENT_PATH = "data/xurCurrentInventory.json";
-
-  const CLASS_ITEMS = { hunter: "relativism", titan: "stoicism", warlock: "solipsism" };
-
-  const tokenInput = document.getElementById("token");
-  const loadBtn = document.getElementById("loadBtn");
-  const loadStatus = document.getElementById("loadStatus");
-  const saveBtn = document.getElementById("saveBtn");
-  const saveStatus = document.getElementById("saveStatus");
-  const debugEl = document.getElementById("debug");
-
-  const armorSelectIds = ["hunterArmor1","hunterArmor2","titanArmor1","titanArmor2","warlockArmor1","warlockArmor2"];
-  const weaponSelectIds = ["weapon1","weapon2","weapon3","weapon4","weapon5"];
-  const catalystSelectIds = ["catalyst1","catalyst2"];
-
-  let masterData = null;
-  let currentData = null;
-
-  function logDebug(line) {
-    debugEl.textContent = (debugEl.textContent ? (debugEl.textContent + "\n") : "") + line;
-  }
-
-  function setStatus(el, msg, cls) {
-    el.textContent = msg;
-    el.className = "status " + (cls || "");
-  }
-
-  (function initToken() {
-    const stored = localStorage.getItem("xur_admin_token");
-    if (stored) tokenInput.value = stored;
-  })();
-
-  tokenInput.addEventListener("change", () => {
-    const val = tokenInput.value.trim();
-    if (val) localStorage.setItem("xur_admin_token", val);
-    else localStorage.removeItem("xur_admin_token");
-  });
-
-  function enableForm() {
-    [...armorSelectIds, ...weaponSelectIds, ...catalystSelectIds].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.disabled = false;
-    });
-    saveBtn.disabled = false;
-  }
-
-  function createOptions(select, items, selectedId) {
-    select.innerHTML = "";
-    const none = document.createElement("option");
-    none.value = "";
-    none.textContent = "None";
-    select.appendChild(none);
-
-    items.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.id;
-      opt.textContent = item.name;
-      if (item.id === selectedId) opt.selected = true;
-      select.appendChild(opt);
-    });
-  }
-
-  function populateForm(master, current) {
-    const hunterArmor = master.exoticArmor.hunter.filter(i => !i.isClassItem);
-    const titanArmor = master.exoticArmor.titan.filter(i => !i.isClassItem);
-    const warlockArmor = master.exoticArmor.warlock.filter(i => !i.isClassItem);
-
-    const curHunter = (current.exoticArmor?.hunter || []).filter(i => !i.isClassItem);
-    const curTitan = (current.exoticArmor?.titan || []).filter(i => !i.isClassItem);
-    const curWarlock = (current.exoticArmor?.warlock || []).filter(i => !i.isClassItem);
-
-    createOptions(document.getElementById("hunterArmor1"), hunterArmor, curHunter[0]?.id || "");
-    createOptions(document.getElementById("hunterArmor2"), hunterArmor, curHunter[1]?.id || "");
-    createOptions(document.getElementById("titanArmor1"), titanArmor, curTitan[0]?.id || "");
-    createOptions(document.getElementById("titanArmor2"), titanArmor, curTitan[1]?.id || "");
-    createOptions(document.getElementById("warlockArmor1"), warlockArmor, curWarlock[0]?.id || "");
-    createOptions(document.getElementById("warlockArmor2"), warlockArmor, curWarlock[1]?.id || "");
-
-    const curWeaponIds = (current.exoticWeapons || []).map(i => i.id);
-    weaponSelectIds.forEach((id, idx) => createOptions(document.getElementById(id), master.exoticWeapons, curWeaponIds[idx] || ""));
-
-    const curCatIds = (current.exoticCatalysts || []).map(i => i.id);
-    catalystSelectIds.forEach((id, idx) => createOptions(document.getElementById(id), master.exoticCatalysts, curCatIds[idx] || ""));
-  }
-
-  function findItemById(master, id) {
-    if (!id) return null;
-    const pools = [
-      master.exoticArmor.hunter,
-      master.exoticArmor.titan,
-      master.exoticArmor.warlock,
-      master.exoticWeapons,
-      master.exoticCatalysts
-    ];
-    for (const pool of pools) {
-      const found = pool.find(i => i.id === id);
-      if (found) return found;
-    }
-    return null;
-  }
-
-  function buildArmorArray(master, pick1, pick2, classItemId) {
-    const out = [];
-    const a = findItemById(master, pick1);
-    const b = findItemById(master, pick2);
-    const c = findItemById(master, classItemId);
-
-    if (a) out.push(a);
-    if (b && (!a || b.id !== a.id)) out.push(b);
-    if (c) out.push(c);
-
-    return out.slice(0, 3);
-  }
-
-  function urlFor(pathFromRoot) {
-    // admin/ is one folder deep; this reliably resolves to repo root on Pages
-    return new URL("../" + pathFromRoot + "?v=" + Date.now(), window.location.href).toString();
-  }
-
-  async function fetchJsonStrict(url) {
-    const res = await fetch(url, { cache: "no-store" });
-    const txt = await res.text();
-
-    logDebug("FETCH " + url);
-    logDebug("STATUS " + res.status);
-    logDebug("BYTES " + txt.length);
-
-    if (!res.ok) {
-      throw new Error("Fetch failed: " + res.status + " for " + url);
-    }
-
-    const trimmed = txt.trim();
-    if (!trimmed) {
-      throw new Error("Empty response body for " + url);
-    }
-
-    try {
-      return JSON.parse(trimmed);
-    } catch (e) {
-      const head = trimmed.slice(0, 200);
-      throw new Error("Invalid JSON at " + url + ". First 200 chars: " + head);
-    }
-  }
-
-  async function saveToGitHub(token, obj) {
-    const api = "https://api.github.com";
-    const pathEnc = encodeURIComponent(CURRENT_PATH);
-    const getUrl = `${api}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${pathEnc}?ref=${encodeURIComponent(GITHUB_BRANCH)}`;
-
-    const getRes = await fetch(getUrl, {
-      headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" }
-    });
-    if (!getRes.ok) throw new Error("Failed to fetch current file SHA. Check repo/branch/path and token permissions.");
-    const fileInfo = await getRes.json();
-
-    const contentString = JSON.stringify(obj, null, 2);
-    const encoded = btoa(unescape(encodeURIComponent(contentString)));
-
-    const putUrl = `${api}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${pathEnc}`;
-    const putRes = await fetch(putUrl, {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "Update Xur weekly inventory",
-        content: encoded,
-        sha: fileInfo.sha,
-        branch: GITHUB_BRANCH
-      })
-    });
-
-    if (!putRes.ok) {
-      const txt = await putRes.text();
-      throw new Error(`GitHub commit failed: ${putRes.status} ${txt}`);
-    }
-  }
-
-  loadBtn.addEventListener("click", async () => {
-    debugEl.textContent = "";
-    setStatus(loadStatus, "", "");
-    setStatus(saveStatus, "", "");
-
-    const token = tokenInput.value.trim();
-    if (!token) { setStatus(loadStatus, "Token required.", "err"); return; }
-
-    loadBtn.disabled = true;
-    setStatus(loadStatus, "Loading…", "");
-
-    try {
-      const masterUrl = urlFor(MASTER_PATH);
-      const currentUrl = urlFor(CURRENT_PATH);
-
-      masterData = await fetchJsonStrict(masterUrl);
-      currentData = await fetchJsonStrict(currentUrl);
-
-      populateForm(masterData, currentData);
-      enableForm();
-      setStatus(loadStatus, "Loaded.", "ok");
-    } catch (e) {
-      console.error(e);
-      logDebug("ERROR " + (e.message || String(e)));
-      setStatus(loadStatus, "Load failed. See debug box.", "err");
-    } finally {
-      loadBtn.disabled = false;
-    }
-  });
-
-  document.getElementById("xurForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    setStatus(saveStatus, "", "");
-
-    const token = tokenInput.value.trim();
-    if (!token) { setStatus(saveStatus, "Token required.", "err"); return; }
-    if (!masterData) { setStatus(saveStatus, "Load inventory first.", "err"); return; }
-
-    saveBtn.disabled = true;
-    setStatus(saveStatus, "Saving…", "");
-
-    try {
-      const exoticArmor = {
-        hunter: buildArmorArray(masterData, document.getElementById("hunterArmor1").value, document.getElementById("hunterArmor2").value, CLASS_ITEMS.hunter),
-        titan: buildArmorArray(masterData, document.getElementById("titanArmor1").value, document.getElementById("titanArmor2").value, CLASS_ITEMS.titan),
-        warlock: buildArmorArray(masterData, document.getElementById("warlockArmor1").value, document.getElementById("warlockArmor2").value, CLASS_ITEMS.warlock)
-      };
-
-      const weaponIds = weaponSelectIds.map(id => document.getElementById(id).value).filter(Boolean);
-      const exoticWeapons = [];
-      for (const id of weaponIds) {
-        const item = findItemById(masterData, id);
-        if (item && !exoticWeapons.find(w => w.id === item.id)) exoticWeapons.push(item);
-      }
-
-      const catIds = catalystSelectIds.map(id => document.getElementById(id).value).filter(Boolean);
-      const exoticCatalysts = [];
-      for (const id of catIds) {
-        const item = findItemById(masterData, id);
-        if (item && !exoticCatalysts.find(c => c.id === item.id)) exoticCatalysts.push(item);
-      }
-
-      await saveToGitHub(token, { exoticArmor, exoticWeapons, exoticCatalysts });
-      setStatus(saveStatus, "Saved.", "ok");
-    } catch (e) {
-      console.error(e);
-      setStatus(saveStatus, e.message || "Save failed.", "err");
-    } finally {
-      saveBtn.disabled = false;
-    }
-  });
-</script>
 </body>
 </html>
