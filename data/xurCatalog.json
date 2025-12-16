@@ -1,0 +1,22 @@
+{
+  "multivariousStrangeOffers": {
+    "catalysts": [],
+    "classItems": [
+      { "name": "Relativism", "icon": "" },
+      { "name": "Stoicism", "icon": "" },
+      { "name": "Solipsism", "icon": "" }
+    ],
+    "exoticArmor": []
+  },
+  "exoticGear": {
+    "engram": [],
+    "weapons": []
+  },
+  "legendaryWeapons": [],
+  "legendaryArmor": [],
+  "loyaltyProgramOfTheNine": {
+    "resetRank": []
+  },
+  "strangeMaterialOffers": [],
+  "strangeRepeatableOffers": []
+}
