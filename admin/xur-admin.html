@@ -2,1057 +2,660 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Xur Weekly Inventory Admin</title>
-
   <style>
-    :root{
-      --bg:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e2e8f0;
-      --card:#ffffff;
-      --shadow:0 1px 2px rgba(15,23,42,.06),0 1px 1px rgba(15,23,42,.04);
-      --radius:14px;
-      --gap:18px;
-      --danger:#991b1b;
-      --danger-bg:#fef2f2;
-      --danger-border:#fecaca;
-      --ok:#065f46;
-      --ok-bg:#ecfdf5;
-      --ok-border:#a7f3d0;
-      --btn:#4f46e5;
-      --btn-text:#ffffff;
-      --btn2:#0f172a;
+    :root {
+      --bg: #0b1020;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --text: #0b1020;
+      --border: #d1d5db;
+      --btn: #4f46e5;
+      --btnDisabled: #9ca3af;
+      --err: #b91c1c;
+      --ok: #065f46;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
     }
-
-    .wrap{max-width:1240px;margin:0 auto;padding:22px 18px 80px}
-    h1{margin:0 0 6px;font-size:34px;letter-spacing:-.02em}
-    h2{margin:0 0 10px;font-size:22px;letter-spacing:-.01em}
-    h3{margin:18px 0 10px;font-size:16px}
-
-    .sub{margin:0 0 18px;color:var(--muted);font-size:13px}
-    .sub code{
-      background:#f1f5f9;
-      border:1px solid var(--border);
-      padding:2px 8px;
-      border-radius:999px;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-      color:#334155;
+    .wrap {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 16px 64px;
     }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
-      margin-top:16px;
+    h1 { margin: 0 0 6px; font-size: 34px; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); margin: 0 0 18px; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      padding: 18px;
+      margin-top: 16px;
+      border: 1px solid rgba(17, 24, 39, 0.06);
     }
-
-    .row{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:flex-end;
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
     }
-
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin:0 0 6px;
+    .row > * { flex: 1 1 240px; min-width: 220px; }
+    label { display: block; font-size: 13px; color: #111827; margin: 0 0 6px; font-weight: 600; }
+    input, select, button, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: #111827;
+      outline: none;
     }
-
-    input[type="text"], input[type="password"], select, textarea{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      font-size:14px;
-      outline:none;
-      background:#ffffff;
+    input:focus, select:focus, textarea:focus { border-color: rgba(79, 70, 229, 0.55); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
+    .btn {
+      background: var(--btn);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 12px 14px;
     }
-
-    textarea{
-      min-height:160px;
-      resize:vertical;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-      color:#0f172a;
+    .btn:disabled { background: var(--btnDisabled); cursor: not-allowed; }
+    .btnSmall {
+      padding: 10px 12px;
+      font-weight: 700;
     }
-
-    .field{flex:1 1 260px; min-width:240px}
-    .field.small{flex:0 0 220px}
-    .field.tiny{flex:0 0 160px}
-    .field.full{flex:1 1 100%; min-width:100%}
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:11px 14px;
-      border-radius:12px;
-      border:1px solid transparent;
-      font-weight:700;
-      cursor:pointer;
-      background:var(--btn);
-      color:var(--btn-text);
-      font-size:14px;
-      user-select:none;
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 12px;
     }
-    .btn.secondary{background:var(--btn2)}
-    .btn.ghost{
-      background:#ffffff;
-      color:#0f172a;
-      border:1px solid var(--border);
+    @media (max-width: 900px) { .meta { grid-template-columns: repeat(2, minmax(180px, 1fr)); } }
+    @media (max-width: 520px) { .meta { grid-template-columns: 1fr; } }
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      font-family: var(--mono);
+      white-space: pre-wrap;
+      background: #0b1020;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      overflow: auto;
+      max-height: 260px;
     }
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-
-    .msg{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      font-size:13px;
-      border:1px solid var(--border);
-      background:#f8fafc;
-      color:#334155;
-      white-space:pre-wrap;
+    .notice { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+    .err { color: var(--err); font-weight: 700; }
+    .ok { color: var(--ok); font-weight: 700; }
+    .sectionTitle { margin: 0 0 6px; font-size: 20px; }
+    .sectionHelp { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
     }
-    .msg.ok{border-color:var(--ok-border); background:var(--ok-bg); color:var(--ok)}
-    .msg.err{border-color:var(--danger-border); background:var(--danger-bg); color:var(--danger)}
-
-    .help{margin:8px 0 0;color:var(--muted);font-size:13px}
-    .mono{
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-      color:#334155;
+    .span6 { grid-column: span 6; }
+    .span4 { grid-column: span 4; }
+    .span3 { grid-column: span 3; }
+    .span12 { grid-column: span 12; }
+    @media (max-width: 900px) {
+      .span6, .span4, .span3 { grid-column: span 12; }
     }
-
-    .pick-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:var(--gap);
+    .slotCard {
+      border: 1px solid rgba(17, 24, 39, 0.10);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
     }
-    @media(max-width:920px){.pick-grid{grid-template-columns:1fr}}
-
-    .item-row{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:8px;
-      padding:12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:#ffffff;
+    .slotHead {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
     }
-
-    .preview{
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(17, 24, 39, 0.10);
+      background: #f9fafb;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
     }
-
-    .thumb{
-      width:42px;
-      height:42px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      background:#f1f5f9;
-      overflow:hidden;
-      flex:0 0 auto;
-      display:grid;
-      place-items:center;
-    }
-    .thumb img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .thumb .na{
-      font-size:11px;
-      color:var(--muted);
-    }
-
-    .debug{
-      margin-top:12px;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:#0b1220;
-      color:#e2e8f0;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-      white-space:pre-wrap;
-      max-height:280px;
-      overflow:auto;
-    }
-
-    .pill{
-      display:inline-block;
-      font-size:12px;
-      color:#334155;
-      background:#f1f5f9;
-      border:1px solid var(--border);
-      padding:2px 8px;
-      border-radius:999px;
-      margin-left:8px;
+    .icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slotMeta { min-width: 0; }
+    .slotLabel { font-size: 13px; font-weight: 800; margin: 0; }
+    .slotValue { font-size: 12px; color: var(--muted); margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(17, 24, 39, 0.10);
+      color: #111827;
+      background: #f9fafb;
+      margin-left: 8px;
+      font-weight: 700;
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <h1>Xur Weekly Inventory Admin</h1>
-    <p class="sub">
-      Reads <code>data/xurCatalog.json</code> and writes <code>data/xurCurrentInventory.json</code>.
-    </p>
+    <p class="sub">Reads <code>../data/xurMasterInventory.json</code> and writes <code>../data/xurCurrentInventory.json</code>. Optional icons: <code>../data/xurIconMap.json</code>.</p>
 
     <div class="card">
-      <h2>GitHub Settings</h2>
-      <div class="row">
-        <div class="field">
-          <label for="token">GitHub token (contents: read/write)</label>
-          <input id="token" type="password" placeholder="github_pat_..." autocomplete="off" />
-          <div class="help">Stored in your browser only; do not commit it.</div>
+      <h2 class="sectionTitle">GitHub Settings</h2>
+      <p class="sectionHelp">Token needs <strong>repo contents read/write</strong>. Stored in your browser only.</p>
+
+      <div class="meta">
+        <div>
+          <label for="ghToken">GitHub token (contents: read/write)</label>
+          <input id="ghToken" type="password" placeholder="github_pat_..." autocomplete="off" />
+          <div class="notice">Stored locally in your browser; do not commit it.</div>
         </div>
-        <div class="field tiny">
-          <label for="owner">Owner</label>
-          <input id="owner" type="text" value="Benntt" />
+        <div>
+          <label for="ghOwner">Owner</label>
+          <input id="ghOwner" type="text" value="Benntt" />
         </div>
-        <div class="field tiny">
-          <label for="repo">Repo</label>
-          <input id="repo" type="text" value="whereisxur" />
+        <div>
+          <label for="ghRepo">Repo</label>
+          <input id="ghRepo" type="text" value="whereisxur" />
         </div>
-        <div class="field tiny">
-          <label for="branch">Branch</label>
-          <input id="branch" type="text" value="main" />
-        </div>
-        <div class="field small">
-          <button id="loadBtn" class="btn" type="button">Load Catalog + Current</button>
+        <div>
+          <label for="ghBranch">Branch</label>
+          <input id="ghBranch" type="text" value="main" />
         </div>
       </div>
 
-      <div id="status" class="msg" style="display:none"></div>
-      <div id="debug" class="debug" style="display:none"></div>
+      <div class="row" style="margin-top: 12px;">
+        <div>
+          <button id="btnLoad" class="btn btnSmall">Load Master + Current</button>
+        </div>
+        <div>
+          <button id="btnSave" class="btn btnSmall" disabled>Save Weekly Inventory</button>
+          <div class="notice">On save, commits to <code>data/xurCurrentInventory.json</code>.</div>
+        </div>
+      </div>
+
+      <div id="topMsg" class="notice" style="margin-top: 10px;"></div>
+      <div id="debug" class="status" aria-live="polite"></div>
     </div>
 
-    <div id="catalogTools" class="card" style="display:none">
-      <h2>Catalog Tools <span id="catalogCount" class="pill"></span></h2>
-      <div class="help">
-        If dropdowns are empty, your catalog arrays are empty. Use this to import items in bulk, then save the catalog to GitHub.
-      </div>
-
-      <div class="row" style="margin-top:12px">
-        <div class="field full">
-          <label for="importText">Bulk import JSON</label>
-          <textarea id="importText" placeholder='Paste JSON array here.
-Accepted formats:
-1) [{"name":"Hawkmoon","icon":"https://www.bungie.net/...png","target":"exoticGear.weapons"}]
-2) {"Hawkmoon":"https://www.bungie.net/...png","Thunderlord":"https://www.bungie.net/...png"} (maps to target selected below)
-'></textarea>
-          <div class="help">
-            Use <span class="mono">target</span> to place each item; or select a target below to apply to map imports.
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="importTarget">Default target for map imports</label>
-          <select id="importTarget"></select>
-        </div>
-
-        <div class="field small">
-          <button id="importBtn" class="btn secondary" type="button">Import Into Catalog</button>
-        </div>
-
-        <div class="field small">
-          <button id="saveCatalogBtn" class="btn" type="button">Save Catalog to GitHub</button>
-        </div>
-      </div>
-
-      <div id="catalogMsg" class="msg" style="display:none"></div>
-    </div>
-
-    <div id="editor" class="card" style="display:none">
-      <h2>Weekly Inventory</h2>
-      <p class="help">
-        Class items are always included and locked:
-        <span class="mono">Relativism</span>,
-        <span class="mono">Stoicism</span>,
-        <span class="mono">Solipsism</span>.
+    <div class="card">
+      <h2 class="sectionTitle">Weekly Layout</h2>
+      <p class="sectionHelp">
+        This page intentionally lets you pick <em>any</em> item from the master list for any slot, so you can cover everything Xur might sell.
+        Class items are fixed: Relativism, Stoicism, Solipsism.
       </p>
 
-      <h3>Multivarious Strange Offers</h3>
-      <div class="help">2 catalysts, 3 class items (locked), 3 exotic armor pieces.</div>
-      <div class="pick-grid">
-        <div id="msoCatalysts"></div>
-        <div id="msoArmor"></div>
+      <div class="grid" id="formRoot"></div>
+
+      <div class="notice" style="margin-top: 14px;">
+        Pro tip: If icons are missing, add <code>data/xurIconMap.json</code> as a plain JSON object: <code>{"2405271938":"https://www.bungie.net/...jpg", ...}</code>. :contentReference[oaicite:1]{index=1}
       </div>
-
-      <h3>Exotic Gear</h3>
-      <div class="help">1 exotic engram, 5 exotic weapons.</div>
-      <div class="pick-grid">
-        <div id="exoticEngram"></div>
-        <div id="exoticWeapons"></div>
-      </div>
-
-      <h3>Legendary Weapons</h3>
-      <div class="help">7 legendary weapons.</div>
-      <div id="legendaryWeapons"></div>
-
-      <h3>Legendary Armor</h3>
-      <div class="help">5 legendary armor pieces.</div>
-      <div id="legendaryArmor"></div>
-
-      <h3>Loyalty Program of the Nine</h3>
-      <div class="help">Reset rank item.</div>
-      <div id="loyaltyNine"></div>
-
-      <h3>Strange Material Offers</h3>
-      <div class="help">Ascendant Shard, prisms, cores, and any other materials you include.</div>
-      <div id="materials"></div>
-
-      <h3>Strange Repeatable Offers</h3>
-      <div class="help">Repeatable bounty/currency items you include.</div>
-      <div id="repeatables"></div>
-
-      <div class="row" style="margin-top:18px">
-        <button id="saveBtn" class="btn" type="button">Save Weekly Inventory</button>
-        <button id="exportBtn" class="btn ghost" type="button">Copy Current JSON</button>
-      </div>
-
-      <div id="saveMsg" class="msg" style="display:none"></div>
     </div>
   </div>
 
   <script>
-    const REPO_SEGMENT = (location.pathname.split("/")[1] || "").trim();
-    const BASE = REPO_SEGMENT ? ("/" + REPO_SEGMENT) : "";
-    const PATH_CATALOG = BASE + "/data/xurCatalog.json";
-    const PATH_CURRENT = BASE + "/data/xurCurrentInventory.json";
+    const LS_TOKEN = "xur_admin_gh_token_v1";
 
-    const LS_TOKEN_KEY = "xur_admin_token_v3";
+    const $ = (id) => document.getElementById(id);
+    const debugEl = $("debug");
+    const msgEl = $("topMsg");
 
-    const CLASS_ITEMS_LOCKED = {
-      hunter: "Relativism",
-      titan: "Stoicism",
-      warlock: "Solipsism"
-    };
+    const log = (s) => { debugEl.textContent += s + "\\n"; };
+    const clearLog = () => { debugEl.textContent = ""; };
 
-    const ui = {
-      token: document.getElementById("token"),
-      owner: document.getElementById("owner"),
-      repo: document.getElementById("repo"),
-      branch: document.getElementById("branch"),
-      loadBtn: document.getElementById("loadBtn"),
-      status: document.getElementById("status"),
-      debug: document.getElementById("debug"),
+    const nowQ = () => "v=" + Date.now();
 
-      catalogTools: document.getElementById("catalogTools"),
-      catalogCount: document.getElementById("catalogCount"),
-      importText: document.getElementById("importText"),
-      importTarget: document.getElementById("importTarget"),
-      importBtn: document.getElementById("importBtn"),
-      saveCatalogBtn: document.getElementById("saveCatalogBtn"),
-      catalogMsg: document.getElementById("catalogMsg"),
-
-      editor: document.getElementById("editor"),
-      saveBtn: document.getElementById("saveBtn"),
-      exportBtn: document.getElementById("exportBtn"),
-      saveMsg: document.getElementById("saveMsg"),
-
-      msoCatalysts: document.getElementById("msoCatalysts"),
-      msoArmor: document.getElementById("msoArmor"),
-      exoticEngram: document.getElementById("exoticEngram"),
-      exoticWeapons: document.getElementById("exoticWeapons"),
-      legendaryWeapons: document.getElementById("legendaryWeapons"),
-      legendaryArmor: document.getElementById("legendaryArmor"),
-      loyaltyNine: document.getElementById("loyaltyNine"),
-      materials: document.getElementById("materials"),
-      repeatables: document.getElementById("repeatables")
-    };
-
-    const TARGETS = [
-      "multivariousStrangeOffers.catalysts",
-      "multivariousStrangeOffers.exoticArmor",
-      "multivariousStrangeOffers.classItems",
-      "exoticGear.engram",
-      "exoticGear.weapons",
-      "legendaryWeapons",
-      "legendaryArmor",
-      "loyaltyProgramOfTheNine.resetRank",
-      "strangeMaterialOffers",
-      "strangeRepeatableOffers"
-    ];
-
-    let catalog = null;
-    let current = null;
-
-    function showMsg(el, kind, text) {
-      el.style.display = "";
-      el.className = "msg" + (kind === "ok" ? " ok" : kind === "err" ? " err" : "");
-      el.textContent = text;
-    }
-
-    function hideMsg(el) {
-      el.style.display = "none";
-      el.textContent = "";
-    }
-
-    function debugOn() { ui.debug.style.display = ""; }
-
-    function logDebug(line) {
-      debugOn();
-      ui.debug.textContent += line + "\n";
-      ui.debug.scrollTop = ui.debug.scrollHeight;
-    }
-
-    function clearDebug() {
-      ui.debug.style.display = "none";
-      ui.debug.textContent = "";
-    }
-
-    function restoreTokenLocal() {
-      try {
-        const t = localStorage.getItem(LS_TOKEN_KEY);
-        if (t) ui.token.value = t;
-      } catch {}
-    }
-
-    function setTokenLocal(token) {
-      try { localStorage.setItem(LS_TOKEN_KEY, token); } catch {}
-    }
-
-    function getToken() {
-      return ui.token.value.trim();
-    }
-
-    function resolveIcon(icon) {
-      if (!icon) return "";
-      if (icon.startsWith("http://") || icon.startsWith("https://")) return icon;
-      return icon.startsWith("/") ? icon : ("/" + icon);
-    }
-
-    function uniqByName(items) {
-      const m = new Map();
-      for (const it of items || []) {
-        if (!it || !it.name) continue;
-        if (!m.has(it.name)) m.set(it.name, it);
-      }
-      return Array.from(m.values()).sort((a,b) => a.name.localeCompare(b.name));
-    }
-
-    function ensureCatalogShape() {
-      if (!catalog || typeof catalog !== "object") catalog = {};
-
-      catalog.multivariousStrangeOffers = catalog.multivariousStrangeOffers || {};
-      catalog.multivariousStrangeOffers.catalysts = catalog.multivariousStrangeOffers.catalysts || [];
-      catalog.multivariousStrangeOffers.exoticArmor = catalog.multivariousStrangeOffers.exoticArmor || [];
-      catalog.multivariousStrangeOffers.classItems = catalog.multivariousStrangeOffers.classItems || [];
-
-      catalog.exoticGear = catalog.exoticGear || {};
-      catalog.exoticGear.engram = catalog.exoticGear.engram || [];
-      catalog.exoticGear.weapons = catalog.exoticGear.weapons || [];
-
-      catalog.legendaryWeapons = catalog.legendaryWeapons || [];
-      catalog.legendaryArmor = catalog.legendaryArmor || [];
-
-      catalog.loyaltyProgramOfTheNine = catalog.loyaltyProgramOfTheNine || {};
-      catalog.loyaltyProgramOfTheNine.resetRank = catalog.loyaltyProgramOfTheNine.resetRank || [];
-
-      catalog.strangeMaterialOffers = catalog.strangeMaterialOffers || [];
-      catalog.strangeRepeatableOffers = catalog.strangeRepeatableOffers || [];
-
-      const ensureLocked = (name) => {
-        if (!catalog.multivariousStrangeOffers.classItems.some(x => x && x.name === name)) {
-          catalog.multivariousStrangeOffers.classItems.push({ name, icon: "" });
-        }
-      };
-
-      ensureLocked(CLASS_ITEMS_LOCKED.hunter);
-      ensureLocked(CLASS_ITEMS_LOCKED.titan);
-      ensureLocked(CLASS_ITEMS_LOCKED.warlock);
-
-      catalog.multivariousStrangeOffers.classItems = uniqByName(catalog.multivariousStrangeOffers.classItems);
-    }
-
-    function ensureCurrentShape() {
-      if (!current || typeof current !== "object") current = {};
-
-      current.weekStartISO = current.weekStartISO || new Date().toISOString();
-
-      current.multivariousStrangeOffers = current.multivariousStrangeOffers || {};
-      current.multivariousStrangeOffers.catalysts = current.multivariousStrangeOffers.catalysts || [];
-      current.multivariousStrangeOffers.exoticArmor = current.multivariousStrangeOffers.exoticArmor || [];
-      current.multivariousStrangeOffers.classItems = {
-        hunter: CLASS_ITEMS_LOCKED.hunter,
-        titan: CLASS_ITEMS_LOCKED.titan,
-        warlock: CLASS_ITEMS_LOCKED.warlock
-      };
-
-      current.exoticGear = current.exoticGear || {};
-      current.exoticGear.engram = current.exoticGear.engram || null;
-      current.exoticGear.weapons = current.exoticGear.weapons || [];
-
-      current.legendaryWeapons = current.legendaryWeapons || [];
-      current.legendaryArmor = current.legendaryArmor || [];
-
-      current.loyaltyProgramOfTheNine = current.loyaltyProgramOfTheNine || {};
-      current.loyaltyProgramOfTheNine.resetRank = current.loyaltyProgramOfTheNine.resetRank || null;
-
-      current.strangeMaterialOffers = current.strangeMaterialOffers || [];
-      current.strangeRepeatableOffers = current.strangeRepeatableOffers || [];
-    }
-
-    function asOptions(items, allowNone) {
-      const list = uniqByName(items);
-      const opts = [];
-      if (allowNone) opts.push({ value: "", label: "None" });
-      for (const it of list) opts.push({ value: it.name, label: it.name });
-      return opts;
-    }
-
-    function allCatalogItemsFlat() {
-      const mso = catalog.multivariousStrangeOffers || {};
-      const exotic = catalog.exoticGear || {};
-      const loyalty = catalog.loyaltyProgramOfTheNine || {};
-
-      return []
-        .concat(mso.catalysts || [])
-        .concat(mso.classItems || [])
-        .concat(mso.exoticArmor || [])
-        .concat(exotic.engram || [])
-        .concat(exotic.weapons || [])
-        .concat(catalog.legendaryWeapons || [])
-        .concat(catalog.legendaryArmor || [])
-        .concat(loyalty.resetRank || [])
-        .concat(catalog.strangeMaterialOffers || [])
-        .concat(catalog.strangeRepeatableOffers || []);
-    }
-
-    function getItemByName(name) {
-      if (!name) return null;
-      return allCatalogItemsFlat().find(x => x && x.name === name) || null;
-    }
-
-    function renderPickList(container, title, options, selectedNames, count, onChange) {
-      container.innerHTML = "";
-      const wrap = document.createElement("div");
-      wrap.className = "item-row";
-
-      const head = document.createElement("div");
-      head.style.fontWeight = "800";
-      head.textContent = title + (options.length <= 1 ? " (catalog empty)" : "");
-      wrap.appendChild(head);
-
-      for (let i = 0; i < count; i++) {
-        const sel = document.createElement("select");
-        for (const opt of options) {
-          const o = document.createElement("option");
-          o.value = opt.value;
-          o.textContent = opt.label;
-          sel.appendChild(o);
-        }
-        sel.value = selectedNames[i] || "";
-        sel.addEventListener("change", () => onChange(i, sel.value));
-
-        const preview = document.createElement("div");
-        preview.className = "preview";
-
-        const thumb = document.createElement("div");
-        thumb.className = "thumb";
-
-        const chosen = sel.value;
-        const item = getItemByName(chosen);
-        const icon = item && item.icon ? resolveIcon(item.icon) : "";
-
-        if (icon) {
-          const img = document.createElement("img");
-          img.src = icon;
-          img.alt = chosen;
-          img.onerror = () => { thumb.innerHTML = "<div class='na'>No image</div>"; };
-          thumb.appendChild(img);
-        } else {
-          thumb.innerHTML = "<div class='na'>No image</div>";
-        }
-
-        const label = document.createElement("div");
-        label.className = "mono";
-        label.textContent = chosen || "None";
-
-        preview.appendChild(thumb);
-        preview.appendChild(label);
-
-        const block = document.createElement("div");
-        block.style.display = "grid";
-        block.style.gap = "8px";
-        block.appendChild(sel);
-        block.appendChild(preview);
-
-        wrap.appendChild(block);
-      }
-
-      container.appendChild(wrap);
-    }
-
-    function renderLockedClassItems(container) {
-      const wrap = document.createElement("div");
-      wrap.className = "item-row";
-
-      const head = document.createElement("div");
-      head.style.fontWeight = "800";
-      head.textContent = "Class Items (locked)";
-      wrap.appendChild(head);
-
-      for (const name of [CLASS_ITEMS_LOCKED.hunter, CLASS_ITEMS_LOCKED.titan, CLASS_ITEMS_LOCKED.warlock]) {
-        const item = getItemByName(name);
-        const icon = item && item.icon ? resolveIcon(item.icon) : "";
-
-        const line = document.createElement("div");
-        line.className = "preview";
-
-        const thumb = document.createElement("div");
-        thumb.className = "thumb";
-        if (icon) {
-          const img = document.createElement("img");
-          img.src = icon;
-          img.alt = name;
-          img.onerror = () => { thumb.innerHTML = "<div class='na'>No image</div>"; };
-          thumb.appendChild(img);
-        } else {
-          thumb.innerHTML = "<div class='na'>No image</div>";
-        }
-
-        const label = document.createElement("div");
-        label.className = "mono";
-        label.textContent = name;
-
-        line.appendChild(thumb);
-        line.appendChild(label);
-        wrap.appendChild(line);
-      }
-
-      container.appendChild(wrap);
-    }
-
-    function renderTargetSelect() {
-      ui.importTarget.innerHTML = "";
-      for (const t of TARGETS) {
-        const o = document.createElement("option");
-        o.value = t;
-        o.textContent = t;
-        ui.importTarget.appendChild(o);
-      }
-      ui.importTarget.value = "exoticGear.weapons";
-    }
-
-    function countCatalogItems() {
-      const total = allCatalogItemsFlat().length;
-      ui.catalogCount.textContent = total + " items";
-    }
-
-    function renderAll() {
-      ensureCatalogShape();
-      ensureCurrentShape();
-      countCatalogItems();
-
-      const mso = catalog.multivariousStrangeOffers || {};
-      const exotic = catalog.exoticGear || {};
-      const loyalty = catalog.loyaltyProgramOfTheNine || {};
-
-      renderPickList(
-        ui.msoCatalysts,
-        "Catalysts (pick 2)",
-        asOptions(mso.catalysts || [], true),
-        current.multivariousStrangeOffers.catalysts,
-        2,
-        (idx, val) => { current.multivariousStrangeOffers.catalysts[idx] = val; }
-      );
-
-      ui.msoArmor.innerHTML = "";
-
-      renderPickList(
-        ui.msoArmor,
-        "Exotic Armor (pick 3)",
-        asOptions(mso.exoticArmor || [], true),
-        current.multivariousStrangeOffers.exoticArmor,
-        3,
-        (idx, val) => { current.multivariousStrangeOffers.exoticArmor[idx] = val; }
-      );
-
-      renderLockedClassItems(ui.msoArmor);
-
-      renderPickList(
-        ui.exoticEngram,
-        "Exotic Engram (pick 1)",
-        asOptions(exotic.engram || [], true),
-        [current.exoticGear.engram || ""],
-        1,
-        (idx, val) => { current.exoticGear.engram = val || null; }
-      );
-
-      renderPickList(
-        ui.exoticWeapons,
-        "Exotic Weapons (pick 5)",
-        asOptions(exotic.weapons || [], true),
-        current.exoticGear.weapons,
-        5,
-        (idx, val) => { current.exoticGear.weapons[idx] = val; }
-      );
-
-      renderPickList(
-        ui.legendaryWeapons,
-        "Legendary Weapons (pick 7)",
-        asOptions(catalog.legendaryWeapons || [], true),
-        current.legendaryWeapons,
-        7,
-        (idx, val) => { current.legendaryWeapons[idx] = val; }
-      );
-
-      renderPickList(
-        ui.legendaryArmor,
-        "Legendary Armor (pick 5)",
-        asOptions(catalog.legendaryArmor || [], true),
-        current.legendaryArmor,
-        5,
-        (idx, val) => { current.legendaryArmor[idx] = val; }
-      );
-
-      renderPickList(
-        ui.loyaltyNine,
-        "Reset Rank (pick 1)",
-        asOptions(loyalty.resetRank || [], true),
-        [current.loyaltyProgramOfTheNine.resetRank || ""],
-        1,
-        (idx, val) => { current.loyaltyProgramOfTheNine.resetRank = val || null; }
-      );
-
-      renderPickList(
-        ui.materials,
-        "Materials (default 8)",
-        asOptions(catalog.strangeMaterialOffers || [], true),
-        current.strangeMaterialOffers,
-        Math.max(8, current.strangeMaterialOffers.length || 0),
-        (idx, val) => { current.strangeMaterialOffers[idx] = val; }
-      );
-
-      renderPickList(
-        ui.repeatables,
-        "Repeatables (default 6)",
-        asOptions(catalog.strangeRepeatableOffers || [], true),
-        current.strangeRepeatableOffers,
-        Math.max(6, current.strangeRepeatableOffers.length || 0),
-        (idx, val) => { current.strangeRepeatableOffers[idx] = val; }
-      );
-    }
-
-    async function fetchJson(path) {
-      const url = new URL(path, window.location.origin);
-      url.searchParams.set("v", String(Date.now()));
-      logDebug("FETCH " + url.toString());
-
-      const res = await fetch(url.toString(), { cache: "no-store" });
+    async function fetchJson(url) {
+      const res = await fetch(url + (url.includes("?") ? "&" : "?") + nowQ(), { cache: "no-store" });
       const txt = await res.text();
-
-      logDebug("STATUS " + res.status);
-      logDebug("BYTES " + txt.length);
-
-      if (!res.ok) throw new Error("Fetch failed: " + path + " (" + res.status + ")");
-
-      const trimmed = txt.trim();
-      if (!trimmed) return null;
-      return JSON.parse(trimmed);
+      log(`FETCH ${res.url}`);
+      log(`STATUS ${res.status}`);
+      log(`BYTES ${txt.length}`);
+      if (!res.ok) throw new Error(`Fetch failed: ${url} (${res.status})`);
+      if (!txt.trim().length) throw new Error(`Empty response body for ${url}`);
+      try { return JSON.parse(txt); } catch (e) { throw new Error(`JSON parse failed for ${url}: ${e.message}`); }
     }
 
-    async function ghGetFile(owner, repo, path, branch, token) {
-      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path.replace(/^\/+/, "") + "?ref=" + encodeURIComponent(branch);
-      logDebug("GH GET " + api);
+    function normalizeMaster(master) {
+      const items = Array.isArray(master) ? master
+        : Array.isArray(master?.items) ? master.items
+        : Array.isArray(master?.catalog) ? master.catalog
+        : Array.isArray(master?.data) ? master.data
+        : [];
 
-      const res = await fetch(api, {
+      const out = [];
+      for (const it of items) {
+        const hash = String(it.itemHash ?? it.hash ?? it.id ?? it.itemId ?? "").trim();
+        const name = String(it.name ?? it.displayName ?? it.itemName ?? "").trim();
+        const type = String(it.type ?? it.itemType ?? it.category ?? "").trim();
+        const classType = String(it.class ?? it.classType ?? it.characterClass ?? "").trim();
+        const tier = String(it.tier ?? it.rarity ?? it.tierType ?? "").trim();
+        const icon = String(it.icon ?? it.iconUrl ?? it.iconURL ?? it.displayProperties?.icon ?? "").trim();
+        if (!hash || !name) continue;
+        out.push({ hash, name, type, classType, tier, icon });
+      }
+
+      out.sort((a, b) => a.name.localeCompare(b.name));
+      return out;
+    }
+
+    function toIconUrl(raw) {
+      if (!raw) return "";
+      if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+      if (raw.startsWith("/common/") || raw.startsWith("/img/") || raw.startsWith("/")) return "https://www.bungie.net" + raw;
+      if (raw.includes("bungie.net/common/")) return raw.startsWith("http") ? raw : ("https://" + raw.replace(/^https?:\/\//, ""));
+      return raw;
+    }
+
+    function iconFor(item, iconMap) {
+      const byMap = iconMap?.[item.hash];
+      if (byMap) return toIconUrl(byMap);
+      if (item.icon) return toIconUrl(item.icon);
+      return "";
+    }
+
+    function makeDatalistOptions(items) {
+      const frag = document.createDocumentFragment();
+      for (const it of items) {
+        const opt = document.createElement("option");
+        opt.value = it.name;
+        opt.dataset.hash = it.hash;
+        frag.appendChild(opt);
+      }
+      return frag;
+    }
+
+    function findByName(itemsByName, name) {
+      const key = String(name || "").trim().toLowerCase();
+      return itemsByName.get(key) || null;
+    }
+
+    function buildItemsIndex(items) {
+      const byHash = new Map();
+      const byName = new Map();
+      for (const it of items) {
+        byHash.set(it.hash, it);
+        byName.set(it.name.toLowerCase(), it);
+      }
+      return { byHash, byName };
+    }
+
+    function ensureCurrentShape(cur) {
+      const base = typeof cur === "object" && cur ? cur : {};
+      if (!base.version) base.version = 1;
+      if (!base.generatedAt) base.generatedAt = new Date().toISOString();
+      if (!base.week) base.week = "";
+      if (!base.slots) base.slots = {};
+      return base;
+    }
+
+    function setSlot(current, key, itemHashOrBlank) {
+      current.slots[key] = itemHashOrBlank ? String(itemHashOrBlank) : "";
+    }
+
+    function getSlot(current, key) {
+      return String(current?.slots?.[key] || "");
+    }
+
+    function mkSlotCard({ key, title, help, items, idx, iconMap, itemsIndex, current }) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "slotCard";
+
+      const head = document.createElement("div");
+      head.className = "slotHead";
+
+      const iconBox = document.createElement("div");
+      iconBox.className = "icon";
+      iconBox.textContent = "No image";
+
+      const meta = document.createElement("div");
+      meta.className = "slotMeta";
+
+      const t = document.createElement("p");
+      t.className = "slotLabel";
+      t.textContent = title;
+
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent = key;
+
+      t.appendChild(pill);
+
+      const v = document.createElement("p");
+      v.className = "slotValue";
+      v.textContent = help || "";
+
+      meta.appendChild(t);
+      meta.appendChild(v);
+
+      head.appendChild(iconBox);
+      head.appendChild(meta);
+
+      const label = document.createElement("label");
+      label.htmlFor = "slot_" + idx;
+      label.textContent = "Pick item";
+
+      const listId = "dl_" + idx;
+      const input = document.createElement("input");
+      input.id = "slot_" + idx;
+      input.setAttribute("list", listId);
+      input.placeholder = "Type to search item name...";
+      input.autocomplete = "off";
+
+      const dl = document.createElement("datalist");
+      dl.id = listId;
+      dl.appendChild(makeDatalistOptions(items));
+
+      const hashHidden = document.createElement("input");
+      hashHidden.type = "hidden";
+
+      function renderIconForHash(hash) {
+        const it = itemsIndex.byHash.get(String(hash)) || null;
+        const url = it ? iconFor(it, iconMap) : "";
+        if (url) {
+          iconBox.textContent = "";
+          const img = document.createElement("img");
+          img.alt = it.name;
+          img.src = url;
+          img.onerror = () => { iconBox.textContent = "No image"; };
+          iconBox.replaceChildren(img);
+          v.textContent = `${it.name}${it.type ? " | " + it.type : ""}${it.tier ? " | " + it.tier : ""}`;
+        } else {
+          iconBox.textContent = "No image";
+          v.textContent = it ? it.name : (help || "");
+        }
+      }
+
+      function setFromName(name) {
+        const it = findByName(itemsIndex.byName, name);
+        if (!it) {
+          hashHidden.value = "";
+          renderIconForHash("");
+          setSlot(current, key, "");
+          return;
+        }
+        hashHidden.value = it.hash;
+        setSlot(current, key, it.hash);
+        renderIconForHash(it.hash);
+      }
+
+      input.addEventListener("input", () => setFromName(input.value));
+
+      const existingHash = getSlot(current, key);
+      if (existingHash) {
+        const it = itemsIndex.byHash.get(existingHash);
+        if (it) input.value = it.name;
+        hashHidden.value = existingHash;
+        renderIconForHash(existingHash);
+      }
+
+      wrapper.appendChild(head);
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      wrapper.appendChild(dl);
+      wrapper.appendChild(hashHidden);
+
+      return wrapper;
+    }
+
+    function sectionHeader(title, help) {
+      const wrap = document.createElement("div");
+      wrap.className = "span12";
+      const h = document.createElement("h3");
+      h.className = "sectionTitle";
+      h.style.marginTop = "8px";
+      h.textContent = title;
+      const p = document.createElement("p");
+      p.className = "sectionHelp";
+      p.textContent = help || "";
+      wrap.appendChild(h);
+      wrap.appendChild(p);
+      return wrap;
+    }
+
+    function addFixedClassItems(current, itemsIndex) {
+      const fixed = [
+        { key: "exotic_class_hunter", name: "Relativism" },
+        { key: "exotic_class_titan", name: "Stoicism" },
+        { key: "exotic_class_warlock", name: "Solipsism" },
+      ];
+      for (const f of fixed) {
+        const it = itemsIndex.byName.get(f.name.toLowerCase());
+        if (it) setSlot(current, f.key, it.hash);
+      }
+    }
+
+    async function ghGetFile({ owner, repo, branch, path, token }) {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}`;
+      const res = await fetch(url, {
         headers: {
-          "Authorization": "Bearer " + token,
-          "Accept": "application/vnd.github+json"
+          "Accept": "application/vnd.github+json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
         }
       });
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error("GitHub read failed: " + res.status + " " + JSON.stringify(json));
-      return json;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(`GitHub read failed: ${res.status} ${data?.message || ""}`.trim());
+      return data;
     }
 
-    async function ghPutFile(owner, repo, path, branch, token, contentText, sha) {
-      const api = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + path.replace(/^\/+/, "");
-      logDebug("GH PUT " + api);
-
+    async function ghPutFile({ owner, repo, branch, path, token, contentText, sha, message }) {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}`;
       const body = {
-        message: "Update " + path.replace(/^\/+/, ""),
+        message,
+        branch,
         content: btoa(unescape(encodeURIComponent(contentText))),
-        branch: branch
+        ...(sha ? { sha } : {}),
       };
-      if (sha) body.sha = sha;
-
-      const res = await fetch(api, {
+      const res = await fetch(url, {
         method: "PUT",
         headers: {
-          "Authorization": "Bearer " + token,
           "Accept": "application/vnd.github+json",
-          "Content-Type": "application/json"
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error("GitHub commit failed: " + res.status + " " + JSON.stringify(json));
-      return json;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(`GitHub commit failed: ${res.status} ${data?.message || ""}`.trim());
+      return data;
     }
 
-    function buildWeeklyJson() {
-      ensureCurrentShape();
+    let state = {
+      masterItems: [],
+      iconMap: null,
+      current: null,
+      itemsIndex: null,
+    };
 
-      const strip = (arr) => (arr || []).filter(x => x && String(x).trim().length > 0);
+    function buildForm() {
+      const root = $("formRoot");
+      root.innerHTML = "";
 
-      return {
-        weekStartISO: current.weekStartISO,
-        multivariousStrangeOffers: {
-          catalysts: strip(current.multivariousStrangeOffers.catalysts),
-          classItems: current.multivariousStrangeOffers.classItems,
-          exoticArmor: strip(current.multivariousStrangeOffers.exoticArmor)
-        },
-        exoticGear: {
-          engram: current.exoticGear.engram || null,
-          weapons: strip(current.exoticGear.weapons)
-        },
-        legendaryWeapons: strip(current.legendaryWeapons),
-        legendaryArmor: strip(current.legendaryArmor),
-        loyaltyProgramOfTheNine: {
-          resetRank: current.loyaltyProgramOfTheNine.resetRank || null
-        },
-        strangeMaterialOffers: strip(current.strangeMaterialOffers),
-        strangeRepeatableOffers: strip(current.strangeRepeatableOffers)
-      };
-    }
+      const items = state.masterItems;
+      const iconMap = state.iconMap;
+      const itemsIndex = state.itemsIndex;
+      const current = state.current;
 
-    function getTargetArray(target) {
-      ensureCatalogShape();
+      addFixedClassItems(current, itemsIndex);
 
-      if (target === "multivariousStrangeOffers.catalysts") return catalog.multivariousStrangeOffers.catalysts;
-      if (target === "multivariousStrangeOffers.exoticArmor") return catalog.multivariousStrangeOffers.exoticArmor;
-      if (target === "multivariousStrangeOffers.classItems") return catalog.multivariousStrangeOffers.classItems;
+      const layout = [
+        sectionHeader("Multivarious Strange Offers", "2 catalysts, 3 exotic class items (auto), 3 exotic armor pieces."),
+        { key: "catalyst_1", title: "Catalyst 1", help: "Any catalyst", span: "span6" },
+        { key: "catalyst_2", title: "Catalyst 2", help: "Any catalyst", span: "span6" },
 
-      if (target === "exoticGear.engram") return catalog.exoticGear.engram;
-      if (target === "exoticGear.weapons") return catalog.exoticGear.weapons;
+        { key: "armor_exotic_1", title: "Exotic Armor 1", help: "Any exotic armor", span: "span4" },
+        { key: "armor_exotic_2", title: "Exotic Armor 2", help: "Any exotic armor", span: "span4" },
+        { key: "armor_exotic_3", title: "Exotic Armor 3", help: "Any exotic armor", span: "span4" },
 
-      if (target === "legendaryWeapons") return catalog.legendaryWeapons;
-      if (target === "legendaryArmor") return catalog.legendaryArmor;
+        sectionHeader("Exotic Gear", "Exotic Engram + 5 exotic weapons."),
+        { key: "exotic_engram", title: "Exotic Engram", help: "Typically an engram item", span: "span6" },
+        { key: "weapon_exotic_1", title: "Exotic Weapon 1", help: "Any exotic weapon", span: "span6" },
+        { key: "weapon_exotic_2", title: "Exotic Weapon 2", help: "Any exotic weapon", span: "span4" },
+        { key: "weapon_exotic_3", title: "Exotic Weapon 3", help: "Any exotic weapon", span: "span4" },
+        { key: "weapon_exotic_4", title: "Exotic Weapon 4", help: "Any exotic weapon", span: "span4" },
+        { key: "weapon_exotic_5", title: "Exotic Weapon 5", help: "Any exotic weapon", span: "span12" },
 
-      if (target === "loyaltyProgramOfTheNine.resetRank") return catalog.loyaltyProgramOfTheNine.resetRank;
+        sectionHeader("Legendary Weapons", "7 legendary weapons."),
+        { key: "weapon_legendary_1", title: "Legendary Weapon 1", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_2", title: "Legendary Weapon 2", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_3", title: "Legendary Weapon 3", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_4", title: "Legendary Weapon 4", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_5", title: "Legendary Weapon 5", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_6", title: "Legendary Weapon 6", help: "Any legendary weapon", span: "span4" },
+        { key: "weapon_legendary_7", title: "Legendary Weapon 7", help: "Any legendary weapon", span: "span12" },
 
-      if (target === "strangeMaterialOffers") return catalog.strangeMaterialOffers;
-      if (target === "strangeRepeatableOffers") return catalog.strangeRepeatableOffers;
+        sectionHeader("Legendary Armor", "5 legendary armor pieces (mix is fine)."),
+        { key: "armor_legendary_1", title: "Legendary Armor 1", help: "Any legendary armor", span: "span4" },
+        { key: "armor_legendary_2", title: "Legendary Armor 2", help: "Any legendary armor", span: "span4" },
+        { key: "armor_legendary_3", title: "Legendary Armor 3", help: "Any legendary armor", span: "span4" },
+        { key: "armor_legendary_4", title: "Legendary Armor 4", help: "Any legendary armor", span: "span6" },
+        { key: "armor_legendary_5", title: "Legendary Armor 5", help: "Any legendary armor", span: "span6" },
 
-      throw new Error("Unknown target: " + target);
-    }
+        sectionHeader("Loyalty Program of the Nine", "Rank/reset rank item."),
+        { key: "loyalty_reset_rank", title: "Reset Rank", help: "Rank/reset item", span: "span12" },
 
-    function importIntoCatalog(parsed, defaultTarget) {
-      ensureCatalogShape();
+        sectionHeader("Strange Material Offers", "Shard, prisms, cores, and other materials."),
+        { key: "mat_ascendant_shard", title: "Ascendant Shard", help: "Material", span: "span6" },
+        { key: "mat_prisms", title: "Enhancement Prisms", help: "Material", span: "span6" },
+        { key: "mat_cores", title: "Enhancement Cores", help: "Material", span: "span6" },
+        { key: "mat_other_1", title: "Other Material 1", help: "Material", span: "span6" },
+        { key: "mat_other_2", title: "Other Material 2", help: "Material", span: "span6" },
+        { key: "mat_other_3", title: "Other Material 3", help: "Material", span: "span6" },
 
-      let added = 0;
-      const pushUnique = (arr, item) => {
-        if (!item || !item.name) return;
-        if (!arr.some(x => x && x.name === item.name)) {
-          arr.push({ name: item.name, icon: item.icon || "" });
-          added++;
+        sectionHeader("Strange Repeatable Offers", "Repeatable bounty/currency."),
+        { key: "repeatable_1", title: "Repeatable Offer", help: "Repeatable item", span: "span12" },
+      ];
+
+      let slotIdx = 0;
+      for (const part of layout) {
+        if (part instanceof HTMLElement) {
+          root.appendChild(part);
+          continue;
         }
-      };
-
-      if (Array.isArray(parsed)) {
-        for (const it of parsed) {
-          if (!it || !it.name) continue;
-          const target = it.target || defaultTarget;
-          const arr = getTargetArray(target);
-          pushUnique(arr, it);
-        }
-      } else if (parsed && typeof parsed === "object") {
-        const arr = getTargetArray(defaultTarget);
-        for (const [name, icon] of Object.entries(parsed)) {
-          pushUnique(arr, { name, icon });
-        }
-      } else {
-        throw new Error("Import JSON must be an array or an object map.");
+        const el = mkSlotCard({
+          key: part.key,
+          title: part.title,
+          help: part.help,
+          items,
+          idx: slotIdx++,
+          iconMap,
+          itemsIndex,
+          current,
+        });
+        el.classList.add(part.span || "span12");
+        root.appendChild(el);
       }
-
-      catalog.multivariousStrangeOffers.catalysts = uniqByName(catalog.multivariousStrangeOffers.catalysts);
-      catalog.multivariousStrangeOffers.exoticArmor = uniqByName(catalog.multivariousStrangeOffers.exoticArmor);
-      catalog.multivariousStrangeOffers.classItems = uniqByName(catalog.multivariousStrangeOffers.classItems);
-
-      catalog.exoticGear.engram = uniqByName(catalog.exoticGear.engram);
-      catalog.exoticGear.weapons = uniqByName(catalog.exoticGear.weapons);
-
-      catalog.legendaryWeapons = uniqByName(catalog.legendaryWeapons);
-      catalog.legendaryArmor = uniqByName(catalog.legendaryArmor);
-
-      catalog.loyaltyProgramOfTheNine.resetRank = uniqByName(catalog.loyaltyProgramOfTheNine.resetRank);
-
-      catalog.strangeMaterialOffers = uniqByName(catalog.strangeMaterialOffers);
-      catalog.strangeRepeatableOffers = uniqByName(catalog.strangeRepeatableOffers);
-
-      ensureCatalogShape();
-      return added;
     }
 
-    ui.loadBtn.addEventListener("click", async () => {
-      hideMsg(ui.status);
-      hideMsg(ui.saveMsg);
-      hideMsg(ui.catalogMsg);
-      clearDebug();
+    async function loadAll() {
+      clearLog();
+      msgEl.textContent = "";
 
-      const token = getToken();
-      if (!token) {
-        showMsg(ui.status, "err", "Missing GitHub token.");
-        return;
-      }
-      setTokenLocal(token);
+      const token = $("ghToken").value.trim();
+      const owner = $("ghOwner").value.trim();
+      const repo = $("ghRepo").value.trim();
+      const branch = $("ghBranch").value.trim();
+
+      if (token) localStorage.setItem(LS_TOKEN, token);
 
       try {
-        showMsg(ui.status, "", "Loading catalog and current inventory...");
+        const master = await fetchJson("../data/xurMasterInventory.json");
+        const masterItems = normalizeMaster(master);
+        if (!masterItems.length) throw new Error("Master inventory loaded, but no items were found. Check xurMasterInventory.json shape.");
 
+        let iconMap = null;
         try {
-          catalog = await fetchJson(PATH_CATALOG);
+          iconMap = await fetchJson("../data/xurIconMap.json");
+          if (typeof iconMap !== "object" || !iconMap) iconMap = null;
         } catch (e) {
-          catalog = null;
-          logDebug("Catalog load failed; you need to create /data/xurCatalog.json. " + e.message);
+          log("Icon map not loaded (optional): " + e.message);
         }
 
-        if (!catalog) {
-          catalog = {};
-          ensureCatalogShape();
-          showMsg(ui.status, "err", "Catalog file missing. Create /data/xurCatalog.json or import and save it below.");
-        } else {
-          ensureCatalogShape();
-          showMsg(ui.status, "ok", "Loaded.");
-        }
+        const currentRaw = await fetchJson("../data/xurCurrentInventory.json");
+        const current = ensureCurrentShape(currentRaw);
 
-        try {
-          current = await fetchJson(PATH_CURRENT);
-        } catch {
-          current = {};
-          logDebug("Current missing or invalid, starting fresh.");
-        }
+        state.masterItems = masterItems;
+        state.iconMap = iconMap;
+        state.current = current;
+        state.itemsIndex = buildItemsIndex(masterItems);
 
-        ensureCurrentShape();
-        renderTargetSelect();
-        ui.catalogTools.style.display = "";
-        ui.editor.style.display = "";
-        renderAll();
+        buildForm();
+
+        $("btnSave").disabled = false;
+        msgEl.innerHTML = `<span class="ok">Loaded.</span> Master items: ${masterItems.length}. Icons: ${iconMap ? "yes" : "no"}.`;
+        log("READY");
+        log(`OWNER ${owner}`);
+        log(`REPO ${repo}`);
+        log(`BRANCH ${branch}`);
       } catch (e) {
-        showMsg(ui.status, "err", String(e && e.message ? e.message : e));
+        $("btnSave").disabled = true;
+        msgEl.innerHTML = `<span class="err">${e.message}</span>`;
+        log("ERROR " + e.message);
       }
-    });
+    }
 
-    ui.importBtn.addEventListener("click", () => {
-      hideMsg(ui.catalogMsg);
+    async function saveCurrentToGitHub() {
+      clearLog();
+      msgEl.textContent = "";
 
-      try {
-        const raw = ui.importText.value.trim();
-        if (!raw) throw new Error("Paste JSON to import.");
+      const token = $("ghToken").value.trim();
+      const owner = $("ghOwner").value.trim();
+      const repo = $("ghRepo").value.trim();
+      const branch = $("ghBranch").value.trim();
 
-        const parsed = JSON.parse(raw);
-        const target = ui.importTarget.value;
-
-        const added = importIntoCatalog(parsed, target);
-        countCatalogItems();
-        renderAll();
-
-        showMsg(ui.catalogMsg, "ok", "Imported. Added " + added + " new items. Save the catalog to GitHub.");
-      } catch (e) {
-        showMsg(ui.catalogMsg, "err", String(e && e.message ? e.message : e));
-      }
-    });
-
-    ui.saveCatalogBtn.addEventListener("click", async () => {
-      hideMsg(ui.catalogMsg);
-      clearDebug();
-
-      const token = getToken();
       if (!token) {
-        showMsg(ui.catalogMsg, "err", "Missing GitHub token.");
+        msgEl.innerHTML = `<span class="err">Missing GitHub token.</span>`;
+        return;
+      }
+      if (!state.current) {
+        msgEl.innerHTML = `<span class="err">Nothing loaded.</span>`;
         return;
       }
 
-      const owner = ui.owner.value.trim();
-      const repo = ui.repo.value.trim();
-      const branch = ui.branch.value.trim();
-
       try {
-        ensureCatalogShape();
-        const contentText = JSON.stringify(catalog, null, 2) + "\n";
+        state.current.generatedAt = new Date().toISOString();
 
-        const path = (BASE + "/data/xurCatalog.json").replace(/^\/+/, "");
-        const existing = await ghGetFile(owner, repo, path, branch, token).catch(() => null);
-        const sha = existing && existing.sha ? existing.sha : null;
+        const path = "data/xurCurrentInventory.json";
+        const existing = await ghGetFile({ owner, repo, branch, path, token });
+        const sha = existing?.sha || null;
 
-        await ghPutFile(owner, repo, path, branch, token, contentText, sha);
-        showMsg(ui.catalogMsg, "ok", "Catalog saved. Reload and your dropdowns will have options.");
+        const contentText = JSON.stringify(state.current, null, 2) + "\n";
+        const message = `Update Xur weekly inventory (${new Date().toISOString()})`;
+
+        const result = await ghPutFile({
+          owner, repo, branch, path, token,
+          contentText,
+          sha,
+          message,
+        });
+
+        msgEl.innerHTML = `<span class="ok">Saved.</span> Commit: ${result?.commit?.sha ? result.commit.sha.slice(0, 12) : "ok"}`;
+        log("SAVED " + path);
       } catch (e) {
-        showMsg(ui.catalogMsg, "err", String(e && e.message ? e.message : e));
+        msgEl.innerHTML = `<span class="err">${e.message}</span>`;
+        log("ERROR " + e.message);
       }
-    });
+    }
 
-    ui.saveBtn.addEventListener("click", async () => {
-      hideMsg(ui.saveMsg);
-      clearDebug();
+    $("btnLoad").addEventListener("click", loadAll);
+    $("btnSave").addEventListener("click", saveCurrentToGitHub);
 
-      const token = getToken();
-      if (!token) {
-        showMsg(ui.saveMsg, "err", "Missing GitHub token.");
-        return;
-      }
-
-      const owner = ui.owner.value.trim();
-      const repo = ui.repo.value.trim();
-      const branch = ui.branch.value.trim();
-
-      try {
-        showMsg(ui.saveMsg, "", "Saving...");
-
-        const weekly = buildWeeklyJson();
-        const contentText = JSON.stringify(weekly, null, 2) + "\n";
-
-        const path = (BASE + "/data/xurCurrentInventory.json").replace(/^\/+/, "");
-        const existing = await ghGetFile(owner, repo, path, branch, token).catch(() => null);
-        const sha = existing && existing.sha ? existing.sha : null;
-
-        await ghPutFile(owner, repo, path, branch, token, contentText, sha);
-        showMsg(ui.saveMsg, "ok", "Saved. Hard refresh the live site.");
-      } catch (e) {
-        showMsg(ui.saveMsg, "err", String(e && e.message ? e.message : e));
-      }
-    });
-
-    ui.exportBtn.addEventListener("click", async () => {
-      hideMsg(ui.saveMsg);
-      try {
-        const weekly = buildWeeklyJson();
-        const contentText = JSON.stringify(weekly, null, 2);
-        await navigator.clipboard.writeText(contentText);
-        showMsg(ui.saveMsg, "ok", "Copied weekly JSON to clipboard.");
-      } catch {
-        showMsg(ui.saveMsg, "err", "Clipboard copy failed; copy from debug output.");
-        debugOn();
-        ui.debug.textContent = JSON.stringify(buildWeeklyJson(), null, 2);
-      }
-    });
-
-    restoreTokenLocal();
-  </script>
-</body>
-</html>
+    (function init() {
+      const saved = localStorage.getItem(LS_TOKEN);
+      if (saved) $("ghToken").valu
