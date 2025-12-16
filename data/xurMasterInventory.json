@@ -81,16 +81,16 @@
   },
   "exoticWeapons": [
     {
-      "id": "thunderlord",
-      "name": "Thunderlord",
-      "type": "Machine Gun",
-      "icon": "https://www.bungie.net/common/destiny2_content/icons/9d4b6f0a37e4b60c4d12c94d22fa7c1e.jpg"
-    },
-    {
       "id": "hawkmoon",
       "name": "Hawkmoon",
       "type": "Hand Cannon",
       "icon": "https://www.bungie.net/common/destiny2_content/icons/ba88c67fbcdfb36b8e79b91f0b6a3c4e.jpg"
+    },
+    {
+      "id": "thunderlord",
+      "name": "Thunderlord",
+      "type": "Machine Gun",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/9d4b6f0a37e4b60c4d12c94d22fa7c1e.jpg"
     },
     {
       "id": "wardcliff-coil",
