@@ -1,103 +1,380 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Where Is Xur</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Where is Xur; Weekly Inventory</title>
   <style>
-    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:24px;color:#111827}
-    .grid{display:grid;gap:18px}
-    .cols{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-    .item{border:1px solid #e5e7eb;border-radius:10px;padding:12px}
-    .icon{width:96px;height:96px;border-radius:10px;overflow:hidden;background:#f3f4f6;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
-    img{width:100%;height:100%;object-fit:cover;display:block}
-    h1{margin:0 0 14px}
-    h2{margin:22px 0 10px}
-    .muted{color:#6b7280;font-size:12px}
-    code{background:#f3f4f6;padding:2px 6px;border-radius:6px}
+    :root {
+      --bg: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+      --radius: 14px;
+      --gap: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 22px 18px 60px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 40px;
+      letter-spacing: -0.02em;
+    }
+
+    .datasource {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .datasource code {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    section {
+      margin-top: 26px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 28px;
+      letter-spacing: -0.01em;
+    }
+
+    .class-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gap);
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .class-grid { grid-template-columns: 1fr; }
+    }
+
+    .class-col h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--gap);
+    }
+
+    @media (max-width: 980px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    .cards-wide {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--gap);
+    }
+
+    @media (max-width: 1200px) {
+      .cards-wide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      .cards-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .cards-wide { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 12px;
+      align-items: center;
+      min-height: 104px;
+    }
+
+    .thumb {
+      width: 84px;
+      height: 84px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .meta {
+      min-width: 0;
+    }
+
+    .name {
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.15;
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sub {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-gap { margin-top: 16px; }
+
+    .error {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+      border-radius: 12px;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    .loading {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <h1>What is Xur Selling This Week?</h1>
-  <p class="muted">Data source: <code>/data/xurCurrentInventory.json</code></p>
+  <div class="wrap">
+    <h1>What is Xur Selling This Week?</h1>
+    <div class="datasource">Data source: <code>/data/xurCurrentInventory.json</code></div>
 
-  <div id="root">Loading…</div>
+    <div id="status" class="loading">Loading inventory…</div>
+    <div id="error" class="error" style="display:none;"></div>
 
-<script>
-(async function () {
-  const root = document.getElementById("root");
-
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-
-  function renderItem(item, subtitle) {
-    const icon = item.icon ? `<img src="${esc(item.icon)}" alt="${esc(item.name)}">` : "";
-    return `
-      <div class="item">
-        <div class="icon">${icon}</div>
-        <div><strong>${esc(item.name)}</strong></div>
-        <div class="muted">${esc(subtitle)}</div>
-      </div>
-    `;
-  }
-
-  try {
-    const res = await fetch("./data/xurCurrentInventory.json", { cache: "no-store" });
-    if (!res.ok) throw new Error("Failed to load current inventory");
-    const data = await res.json();
-
-    const hunter = data.exoticArmor?.hunter ?? [];
-    const titan = data.exoticArmor?.titan ?? [];
-    const warlock = data.exoticArmor?.warlock ?? [];
-    const weapons = data.exoticWeapons ?? [];
-    const catalysts = data.exoticCatalysts ?? [];
-
-    root.innerHTML = `
+    <section id="armorSection" style="display:none;">
       <h2>Exotic Armor</h2>
-      <div class="grid cols">
-        <div>
+      <div class="class-grid">
+        <div class="class-col">
           <h3>Hunter</h3>
-          <div class="grid cols">
-            ${hunter.map(i => renderItem(i, i.isClassItem ? "Exotic Hunter Class Item" : "Exotic Hunter Armor")).join("")}
-          </div>
+          <div id="hunterArmor" class="cards"></div>
         </div>
-        <div>
+        <div class="class-col">
           <h3>Titan</h3>
-          <div class="grid cols">
-            ${titan.map(i => renderItem(i, i.isClassItem ? "Exotic Titan Class Item" : "Exotic Titan Armor")).join("")}
-          </div>
+          <div id="titanArmor" class="cards"></div>
         </div>
-        <div>
+        <div class="class-col">
           <h3>Warlock</h3>
-          <div class="grid cols">
-            ${warlock.map(i => renderItem(i, i.isClassItem ? "Exotic Warlock Class Item" : "Exotic Warlock Armor")).join("")}
-          </div>
+          <div id="warlockArmor" class="cards"></div>
         </div>
       </div>
+    </section>
 
+    <section id="weaponsSection" style="display:none;">
       <h2>Exotic Weapons</h2>
-      <div class="grid cols">
-        ${weapons.map(i => renderItem(i, i.type || "Exotic Weapon")).join("")}
-      </div>
+      <div id="weapons" class="cards-wide"></div>
+    </section>
 
+    <section id="catalystsSection" style="display:none;">
       <h2>Exotic Catalysts</h2>
-      <div class="grid cols">
-        ${catalysts.map(i => renderItem(i, i.weapon ? `Catalyst for ${i.weapon}` : "Exotic Catalyst")).join("")}
-      </div>
+      <div id="catalysts" class="cards-wide"></div>
+    </section>
+  </div>
 
-      <p class="muted" style="margin-top:22px">
-        Admin page: <code>/admin/xur-admin.html</code>
-      </p>
-    `;
-  } catch (e) {
-    root.textContent = "Inventory unavailable.";
-    console.error(e);
-  }
-})();
-</script>
+  <script>
+    const DATA_URL = "/data/xurCurrentInventory.json";
+
+    function resolveIcon(icon) {
+      if (!icon) return "";
+      if (icon.startsWith("http://") || icon.startsWith("https://")) return icon;
+      return icon.startsWith("/") ? icon : ("/" + icon);
+    }
+
+    function safeText(v) {
+      return (v === null || v === undefined) ? "" : String(v);
+    }
+
+    function subtypeForArmor(item) {
+      const cls = safeText(item.class);
+      if (item.isClassItem) return `Exotic ${cls} Class Item`;
+      return `Exotic ${cls} Armor`;
+    }
+
+    function makeCard(item, subtitle) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const thumb = document.createElement("div");
+      thumb.className = "thumb";
+
+      const img = document.createElement("img");
+      img.alt = safeText(item.name);
+
+      const icon = resolveIcon(safeText(item.icon));
+      img.src = icon;
+
+      img.onerror = () => {
+        img.remove();
+        const fallback = document.createElement("div");
+        fallback.style.width = "100%";
+        fallback.style.height = "100%";
+        fallback.style.display = "grid";
+        fallback.style.placeItems = "center";
+        fallback.style.color = "#94a3b8";
+        fallback.style.fontSize = "12px";
+        fallback.style.textAlign = "center";
+        fallback.style.padding = "8px";
+        fallback.textContent = "No image";
+        thumb.appendChild(fallback);
+      };
+
+      thumb.appendChild(img);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const name = document.createElement("p");
+      name.className = "name";
+      name.textContent = safeText(item.name);
+
+      const sub = document.createElement("p");
+      sub.className = "sub";
+      sub.textContent = subtitle;
+
+      meta.appendChild(name);
+      meta.appendChild(sub);
+
+      card.appendChild(thumb);
+      card.appendChild(meta);
+
+      return card;
+    }
+
+    function renderArmor(data) {
+      const armor = data.exoticArmor || {};
+      const hunter = Array.isArray(armor.hunter) ? armor.hunter : [];
+      const titan = Array.isArray(armor.titan) ? armor.titan : [];
+      const warlock = Array.isArray(armor.warlock) ? armor.warlock : [];
+
+      const hunterEl = document.getElementById("hunterArmor");
+      const titanEl = document.getElementById("titanArmor");
+      const warlockEl = document.getElementById("warlockArmor");
+
+      hunterEl.innerHTML = "";
+      titanEl.innerHTML = "";
+      warlockEl.innerHTML = "";
+
+      for (const item of hunter) hunterEl.appendChild(makeCard(item, subtypeForArmor(item)));
+      for (const item of titan) titanEl.appendChild(makeCard(item, subtypeForArmor(item)));
+      for (const item of warlock) warlockEl.appendChild(makeCard(item, subtypeForArmor(item)));
+
+      const hasAny = hunter.length + titan.length + warlock.length > 0;
+      document.getElementById("armorSection").style.display = hasAny ? "" : "none";
+    }
+
+    function renderWeapons(data) {
+      const weapons = Array.isArray(data.exoticWeapons) ? data.exoticWeapons : [];
+      const weaponsEl = document.getElementById("weapons");
+      weaponsEl.innerHTML = "";
+
+      for (const item of weapons) {
+        const type = safeText(item.type) || "Exotic Weapon";
+        weaponsEl.appendChild(makeCard(item, type));
+      }
+
+      document.getElementById("weaponsSection").style.display = weapons.length ? "" : "none";
+    }
+
+    function renderCatalysts(data) {
+      const cats = Array.isArray(data.exoticCatalysts) ? data.exoticCatalysts : [];
+      const el = document.getElementById("catalysts");
+      el.innerHTML = "";
+
+      for (const item of cats) {
+        const weapon = safeText(item.weapon);
+        const label = weapon ? `${weapon} Catalyst` : "Exotic Catalyst";
+        el.appendChild(makeCard(item, label));
+      }
+
+      document.getElementById("catalystsSection").style.display = cats.length ? "" : "none";
+    }
+
+    async function loadInventory() {
+      const statusEl = document.getElementById("status");
+      const errorEl = document.getElementById("error");
+
+      try {
+        statusEl.style.display = "";
+        errorEl.style.display = "none";
+        statusEl.textContent = "Loading inventory…";
+
+        const res = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
+        const text = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`Failed to load inventory (${res.status}).`);
+        }
+
+        const trimmed = text.trim();
+        if (!trimmed) {
+          throw new Error("Inventory JSON is empty.");
+        }
+
+        const data = JSON.parse(trimmed);
+
+        renderArmor(data);
+        renderWeapons(data);
+        renderCatalysts(data);
+
+        statusEl.textContent = "";
+        statusEl.style.display = "none";
+      } catch (err) {
+        statusEl.style.display = "none";
+        errorEl.style.display = "";
+        errorEl.textContent = String(err && err.message ? err.message : err);
+      }
+    }
+
+    loadInventory();
+  </script>
 </body>
 </html>
-
