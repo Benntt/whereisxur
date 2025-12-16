@@ -1,17 +1,128 @@
 {
-  "exoticArmor": [
-    {
-      "name": "Shards of Galanor",
-      "itemHash": 2405271938,
-      "class": "Hunter",
-      "type": "Exotic Hunter Armor"
-    }
-  ],
+  "exoticArmor": {
+    "hunter": [
+      {
+        "id": "shards-of-galanor",
+        "name": "Shards of Galanor",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Hunter",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/4abdc33a8ff869fc7bdcbdc83fbaba01.jpg"
+      },
+      {
+        "id": "renewal-grasps",
+        "name": "Renewal Grasps",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Hunter",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/5d4f28f6f6b6a0bb9b99d1d8f9bb1b13.jpg"
+      },
+      {
+        "id": "relativism",
+        "name": "Relativism",
+        "slot": "Cloak",
+        "isClassItem": true,
+        "class": "Hunter",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/0e5d82f7d6df6b9c1b02d4cbf7e08b6f.jpg"
+      }
+    ],
+    "titan": [
+      {
+        "id": "khepris-horn",
+        "name": "Khepri's Horn",
+        "slot": "Helmet",
+        "isClassItem": false,
+        "class": "Titan",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/5c30fcb0f4a71f57e52d4c1b2aefc9c1.jpg"
+      },
+      {
+        "id": "point-contact-cannon-brace",
+        "name": "Point-Contact Cannon Brace",
+        "slot": "Gauntlets",
+        "isClassItem": false,
+        "class": "Titan",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/2c94c2cfa51b98c92d15c3d7f0a0e1f6.jpg"
+      },
+      {
+        "id": "stoicism",
+        "name": "Stoicism",
+        "slot": "Mark",
+        "isClassItem": true,
+        "class": "Titan",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/9c3e1fd1e69a1cb1a6384f0b1e9a41de.jpg"
+      }
+    ],
+    "warlock": [
+      {
+        "id": "veritys-brow",
+        "name": "Verity's Brow",
+        "slot": "Helmet",
+        "isClassItem": false,
+        "class": "Warlock",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/afedc9df78b96e7e7a2c2c1c7b4d8b7f.jpg"
+      },
+      {
+        "id": "secant-filaments",
+        "name": "Secant Filaments",
+        "slot": "Legs",
+        "isClassItem": false,
+        "class": "Warlock",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/66e92c0c62f42b3d11cbb1f8b89c6a71.jpg"
+      },
+      {
+        "id": "solipsism",
+        "name": "Solipsism",
+        "slot": "Bond",
+        "isClassItem": true,
+        "class": "Warlock",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/40b8c7bb8c2f0c7df5c3f4d7fcbabef4.jpg"
+      }
+    ]
+  },
   "exoticWeapons": [
     {
+      "id": "hawkmoon",
       "name": "Hawkmoon",
-      "itemHash": 3158812152,
-      "type": "Hand Cannon"
+      "type": "Hand Cannon",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/ba88c67fbcdfb36b8e79b91f0b6a3c4e.jpg"
+    },
+    {
+      "id": "thunderlord",
+      "name": "Thunderlord",
+      "type": "Machine Gun",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/9d4b6f0a37e4b60c4d12c94d22fa7c1e.jpg"
+    },
+    {
+      "id": "wardcliff-coil",
+      "name": "The Wardcliff Coil",
+      "type": "Rocket Launcher",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/21a0d40b3c6c13d5d0c0b4cfa92f47fa.jpg"
+    },
+    {
+      "id": "sunshot",
+      "name": "Sunshot",
+      "type": "Hand Cannon",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/0bbfd6b7d3b8b5fefafdbfa7b2a7c1c9.jpg"
+    },
+    {
+      "id": "arbalest",
+      "name": "Arbalest",
+      "type": "Linear Fusion Rifle",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/8e9c52f6c59a4fcb8f9c16a7a2c8b0a1.jpg"
+    }
+  ],
+  "exoticCatalysts": [
+    {
+      "id": "thunderlord-catalyst",
+      "name": "Thunderlord Catalyst",
+      "weapon": "Thunderlord",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/9d4b6f0a37e4b60c4d12c94d22fa7c1e.jpg"
+    },
+    {
+      "id": "sunshot-catalyst",
+      "name": "Sunshot Catalyst",
+      "weapon": "Sunshot",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/0bbfd6b7d3b8b5fefafdbfa7b2a7c1c9.jpg"
     }
   ]
 }
